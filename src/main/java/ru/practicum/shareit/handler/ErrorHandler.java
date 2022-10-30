@@ -17,7 +17,7 @@ import java.util.Locale;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    static{
+    static {
         Locale.setDefault(new Locale("en"));
     }
 
