@@ -1,4 +1,4 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,21 +10,11 @@ import javax.validation.constraints.NotBlank;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class UserDto {
 
     private Integer id;
     @NotBlank
     private String name;
     @Email
     private String email;
-
-    public User updateUser(User update) {
-        if (update.getName() != null) {
-            this.name = update.getName();
-        }
-        if (update.getEmail() != null) {
-            this.email = update.getEmail();
-        }
-        return this;
-    }
 }
