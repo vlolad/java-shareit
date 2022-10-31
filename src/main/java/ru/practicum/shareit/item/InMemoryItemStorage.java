@@ -1,13 +1,13 @@
 package ru.practicum.shareit.item;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
-public class InMemoryItemStorage {
+@Repository
+public class InMemoryItemStorage implements ItemStorage {
 
     private final Map<Integer, Item> itemStorage = new HashMap<>();
 

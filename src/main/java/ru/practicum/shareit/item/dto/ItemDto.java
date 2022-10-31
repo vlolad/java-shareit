@@ -18,7 +18,7 @@ public class ItemDto {
     private String description;
     @NotNull
     private Boolean available;
-    private Integer requestUrl;
+    private Integer request;
 
     public ItemDto(Integer id, String name, String description, Boolean available) {
         this.id = id;
