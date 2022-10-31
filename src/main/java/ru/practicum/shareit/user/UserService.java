@@ -85,6 +85,7 @@ public class UserService {
         log.debug("Generating id...");
         return ++id;
     }
+
     private boolean checkEmail(UserDto user) {
         Set<String> emails = userStorage.get().values().stream()
                 .map(User::getEmail).collect(Collectors.toSet());
