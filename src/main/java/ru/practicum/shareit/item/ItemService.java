@@ -11,7 +11,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserStorage;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -71,7 +70,6 @@ public class ItemService {
     }
 
     public List<ItemDto> searchItems(String text) {
-        if (text.isBlank()) return Collections.emptyList();
         log.debug("Searching: {}", text);
         return itemStorage.get().values().stream()
                 .filter(item -> item.getAvailable() && (item.getName().toLowerCase().contains(text.toLowerCase())

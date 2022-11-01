@@ -57,6 +57,7 @@ public class ItemController {
     @ResponseStatus(HttpStatus.OK)
     public List<ItemDto> searchItems(@RequestParam("text") String text) {
         log.debug("GET-request at /items/search?text={}", text);
+        if (text.isBlank()) return Collections.emptyList();
         return itemService.searchItems(text);
     }
 }
