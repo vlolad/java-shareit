@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.exception.UserCreationException;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -28,10 +27,6 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@RequestBody @Valid UserDto user) {
         log.debug("POST-request at /users");
-        if (user.getEmail() == null) {
-            log.error("Email is NULL, it cant be null.");
-            throw new UserCreationException(HttpStatus.BAD_REQUEST, "Email is NULL.");
-        }
         return userService.createUser(user);
     }
 
