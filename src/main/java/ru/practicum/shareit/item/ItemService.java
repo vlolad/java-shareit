@@ -42,7 +42,7 @@ public class ItemService {
         Item item = itemStorage.get(itemDto.getId());
         if (item == null) throw new NotFoundException("Item with ID: " + itemDto.getId() + " not found.");
         if (!Objects.equals(item.getOwner().getId(), ownerId))
-            throw new ItemBadRequestException(HttpStatus.FORBIDDEN,"Restricted PATCH: user not owner.");
+            throw new ItemBadRequestException(HttpStatus.FORBIDDEN, "Restricted PATCH: user not owner.");
         Item newItem = patchItem(item, itemDto);
         itemStorage.replace(newItem.getId(), newItem);
         log.info("Update item (id:{}) successfully", newItem.getId());
@@ -77,12 +77,12 @@ public class ItemService {
 
     private Item patchItem(Item item, ItemDto newItem) {
         if (!Objects.equals(newItem.getName(), null)) {
-            if(!newItem.getName().isBlank()) {
+            if (!newItem.getName().isBlank()) {
                 item.setName(newItem.getName());
             }
         }
         if (!Objects.equals(newItem.getDescription(), null)) {
-            if(!newItem.getDescription().isBlank()) {
+            if (!newItem.getDescription().isBlank()) {
                 item.setDescription(newItem.getDescription());
             }
         }
