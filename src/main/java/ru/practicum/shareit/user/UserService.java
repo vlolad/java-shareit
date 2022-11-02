@@ -8,7 +8,6 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.UserCreationException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,7 @@ public class UserService {
         if (checkEmail(user)) {
             log.debug("Creating user with email: {}", user.getEmail());
             user.setId(generateId());
-            userStorage.get().put(user.getId(), UserMapper.toUser(user));
+            userStorage.put(user.getId(), UserMapper.toUser(user));
             log.info("User successfully created >>>");
             log.debug(user.toString());
             return user;
@@ -39,12 +38,12 @@ public class UserService {
     }
 
     public UserDto patchUser(UserDto user) {
-        Optional<User> oldUser = Optional.ofNullable(userStorage.get().get(user.getId()));
-        if (oldUser.isPresent()) {
+        User oldUser = userStorage.get(user.getId());
+        if (oldUser != null) {
             log.debug("User with id: {} exists.", user.getId());
-            if (checkEmail(user) || (user.getEmail().equals(oldUser.get().getEmail()))) {
-                User patchedUser = updateUser(oldUser.get(), user);
-                userStorage.get().replace(user.getId(), patchedUser);
+            if (checkEmail(user) || (user.getEmail().equals(oldUser.getEmail()))) {
+                User patchedUser = updateUser(oldUser, user);
+                userStorage.replace(user.getId(), patchedUser);
                 log.info("User with id: {} successfully patched.", patchedUser.getId());
                 log.debug(patchedUser.toString());
                 return UserMapper.toUserDto(patchedUser);
@@ -59,16 +58,16 @@ public class UserService {
     }
 
     public List<UserDto> getAllUsers() {
-        return userStorage.get().values().stream()
+        return userStorage.getAll().values().stream()
                 .map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     public UserDto getUser(Integer userId) {
-        return UserMapper.toUserDto(userStorage.get().get(userId));
+        return UserMapper.toUserDto(userStorage.get(userId));
     }
 
     public boolean deleteUser(Integer userId) {
-        return Optional.ofNullable(userStorage.get().remove(userId)).isPresent();
+        return (userStorage.remove(userId) != null);
     }
 
     private User updateUser(User user, UserDto update) {
@@ -87,7 +86,7 @@ public class UserService {
     }
 
     private boolean checkEmail(UserDto user) {
-        Set<String> emails = userStorage.get().values().stream()
+        Set<String> emails = userStorage.getAll().values().stream()
                 .map(User::getEmail).collect(Collectors.toSet());
         return !emails.contains(user.getEmail());
     }

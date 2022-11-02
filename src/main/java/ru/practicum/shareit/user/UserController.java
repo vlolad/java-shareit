@@ -4,9 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.validate.Create;
+import ru.practicum.shareit.validate.Update;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -14,6 +17,7 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -25,6 +29,7 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Validated(Create.class)
     public UserDto createUser(@RequestBody @Valid UserDto user) {
         log.debug("POST-request at /users");
         return userService.createUser(user);
@@ -32,7 +37,8 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDto patchUser(@RequestBody UserDto user,
+    @Validated(Update.class)
+    public UserDto patchUser(@RequestBody @Valid UserDto user,
                           @PathVariable Integer userId) {
         log.debug("PATCH-request at /users/{}", userId);
         user.setId(userId);
@@ -54,7 +60,6 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<String> deleteUser(@PathVariable Integer userId) {
         log.warn("DELETE-request at /users/{}", userId);
         boolean del = userService.deleteUser(userId);
