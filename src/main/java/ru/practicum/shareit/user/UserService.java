@@ -72,10 +72,14 @@ public class UserService {
 
     private User updateUser(User user, UserDto update) {
         if (update.getName() != null) {
-            user.setName(update.getName());
+            if (!update.getName().isBlank()) {
+                user.setName(update.getName());
+            }
         }
         if (update.getEmail() != null) {
-            user.setEmail(update.getEmail());
+            if (!update.getEmail().isBlank()) {
+                user.setEmail(update.getEmail());
+            }
         }
         return user;
     }
