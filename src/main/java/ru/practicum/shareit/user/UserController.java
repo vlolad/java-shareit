@@ -32,7 +32,7 @@ public class UserController {
     @Validated(Create.class)
     public UserDto createUser(@RequestBody @Valid UserDto user) {
         log.debug("POST-request at /users");
-        return userService.createUser(user);
+        return userService.create(user);
     }
 
     @PatchMapping("/{userId}")
@@ -42,7 +42,7 @@ public class UserController {
                           @PathVariable Integer userId) {
         log.debug("PATCH-request at /users/{}", userId);
         user.setId(userId);
-        return userService.patchUser(user);
+        return userService.patch(user);
     }
 
     @GetMapping
@@ -62,11 +62,8 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public ResponseEntity<String> deleteUser(@PathVariable Integer userId) {
         log.warn("DELETE-request at /users/{}", userId);
-        boolean del = userService.deleteUser(userId);
-        if (del) {
-            return new ResponseEntity<>("User (id: " + userId + ") deleted successfully.", HttpStatus.OK);
-        } else {
-            throw new NotFoundException("User (id: " + userId + ") not found.");
-        }
+        userService.deleteUser(userId);
+        return new ResponseEntity<>("Request for delete user (id: " + userId + ")" +
+                " executed successfully.", HttpStatus.OK);
     }
 }
