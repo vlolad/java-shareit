@@ -9,70 +9,66 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.exception.ItemBadRequestException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserStorage;
+import ru.practicum.shareit.user.UserRepository;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class ItemService {
 
-    private int id = 0;
-    private final ItemStorage itemStorage;
-    private final UserStorage userStorage;
+    private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
+    private final ItemMapper itemMapper;
 
     @Autowired
-    public ItemService(ItemStorage itemStorage, UserStorage userStorage) {
-        this.itemStorage = itemStorage;
-        this.userStorage = userStorage;
+    public ItemService(ItemRepository itemRepository, UserRepository userRepository, ItemMapper itemMapper) {
+        this.itemRepository = itemRepository;
+        this.userRepository = userRepository;
+        this.itemMapper = itemMapper;
     }
 
-    public ItemDto createItem(ItemDto item, Integer ownerId) {
-        User owner = userStorage.get(ownerId);
-        if (owner == null) throw new NotFoundException("Owner ID not found.");
-        item.setId(generateId());
-        log.debug("Create new Item with id: {}", item.getId());
-        itemStorage.put(item.getId(), ItemMapper.toItem(item, owner));
-        return item;
+    public ItemDto create(ItemDto item, Integer ownerId) {
+        Optional<User> owner = userRepository.findById(ownerId);
+        if (owner.isEmpty()) throw new NotFoundException("Owner ID not found.");
+        Item newItem = itemMapper.toEntity(item);
+        newItem.setOwner(owner.get());
+        log.debug("Saving new item: {}", newItem);
+        return itemMapper.toDto(itemRepository.save(newItem));
     }
 
     public ItemDto patchItem(ItemDto itemDto, Integer ownerId) {
-        Item item = itemStorage.get(itemDto.getId());
-        if (item == null) throw new NotFoundException("Item with ID: " + itemDto.getId() + " not found.");
-        if (!Objects.equals(item.getOwner().getId(), ownerId))
+        Optional<Item> oldItem = itemRepository.findById(itemDto.getId());
+        if (oldItem.isEmpty()) throw new NotFoundException("Item with ID: " + itemDto.getId() + " not found.");
+        if (!Objects.equals(oldItem.get().getOwner().getId(), ownerId))
             throw new ItemBadRequestException(HttpStatus.FORBIDDEN, "Restricted PATCH: user not owner.");
-        Item newItem = patchItem(item, itemDto);
-        itemStorage.replace(newItem.getId(), newItem);
-        log.info("Update item (id:{}) successfully", newItem.getId());
-        return ItemMapper.toItemDto(newItem);
+        Item item = patchItem(oldItem.get(), itemDto);
+        log.debug("Saving updated item: {}", item);
+        return itemMapper.toDto(itemRepository.save(item));
     }
 
     public ItemDto getItem(Integer itemId) {
-        Item item = itemStorage.get(itemId);
-        if (item != null) {
+        Optional<Item> item = itemRepository.findById(itemId);
+        if (item.isPresent()) {
             log.debug("Item with ID: {} found successfully.", itemId);
-            return ItemMapper.toItemDto(item);
+            return itemMapper.toDto(item.get());
         } else {
             throw new NotFoundException("Item with ID: " + itemId + " not found.");
         }
     }
 
     public List<ItemDto> getAllItemsByOwner(Integer ownerId) {
-        if (!userStorage.containsKey(ownerId))
+        if (userRepository.findById(ownerId).isEmpty())
             throw new NotFoundException("Owner (id: " + ownerId + ") not found.");
         log.info("Found owner (id:{}), return items.", ownerId);
-        return itemStorage.getItemsByOwner(ownerId).stream()
-                .map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return itemMapper.toDtoList(itemRepository.findByOwner_id(ownerId));
     }
 
     public List<ItemDto> searchItems(String text) {
         log.debug("Searching: {}", text);
-        return itemStorage.getAll().values().stream()
-                .filter(item -> item.getAvailable() && (item.getName().toLowerCase().contains(text.toLowerCase())
-                        || item.getDescription().toLowerCase().contains(text.toLowerCase())))
-                .map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return itemMapper.toDtoList(itemRepository.search(text));
     }
 
     private Item patchItem(Item item, ItemDto newItem) {
@@ -90,10 +86,5 @@ public class ItemService {
             item.setAvailable(newItem.getAvailable());
         }
         return item;
-    }
-
-    private Integer generateId() {
-        log.debug("Generating id...");
-        return ++id;
     }
 }

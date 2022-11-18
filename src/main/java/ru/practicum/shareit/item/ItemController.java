@@ -3,8 +3,10 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.validate.Create;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -12,6 +14,7 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping("/items")
+@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -23,10 +26,11 @@ public class ItemController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Validated(Create.class)
     public ItemDto createItem(@RequestBody @Valid ItemDto itemDto,
                               @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
         log.debug("POST-request at /items");
-        return itemService.createItem(itemDto, ownerId);
+        return itemService.create(itemDto, ownerId);
     }
 
     @PatchMapping("/{itemId}")

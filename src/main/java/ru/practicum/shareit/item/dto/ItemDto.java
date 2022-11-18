@@ -3,27 +3,24 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.validate.Create;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemDto {
+    @Null(groups = {Create.class})
     private Integer id;
-    @NotBlank
+    @NotBlank(groups = {Create.class})
     private String name;
-    @NotBlank
+    @NotBlank(groups = {Create.class})
     private String description;
-    @NotNull
+    @NotNull(groups = {Create.class})
     private Boolean available;
-    private Integer request;
-
-    public ItemDto(Integer id, String name, String description, Boolean available) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.available = available;
-    }
+    //Для текущего спринта не требуется реализовывать.
+    //private Integer request;
 }
