@@ -20,11 +20,11 @@ public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    @Column(name="description")
+    @Column(name = "description")
     private String desc;
     @ManyToOne
-    @JoinColumn(name="requester_id", referencedColumnName="id")
+    @JoinColumn(name = "requester_id", referencedColumnName = "id")
     private User requester;
-    @Column(name="creation_date")
+    @Column(name = "creation_date")
     private LocalDateTime created;
 }

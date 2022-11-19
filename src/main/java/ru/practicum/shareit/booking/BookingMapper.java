@@ -16,6 +16,7 @@ public interface BookingMapper {
     BookingDto toDto(Booking booking);
 
     Booking toEntity(BookingDto bookingDto);
+
     @Mapping(target = "bookerId", source = "booker.id")
     BookingDtoShort toDtoShort(Booking booking);
 

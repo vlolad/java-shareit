@@ -87,7 +87,7 @@ public class ItemService {
         if (userRepository.findById(ownerId).isEmpty())
             throw new NotFoundException("Owner (id: " + ownerId + ") not found.");
         log.info("Found owner (id:{}), return items.", ownerId);
-        List<ItemDto> itemsList = itemMapper.toDtoList(itemRepository.findByOwner_id(ownerId));
+        List<ItemDto> itemsList = itemMapper.toDtoList(itemRepository.findByOwnerId(ownerId));
         return itemsList.stream().peek(this::addBookings).collect(Collectors.toList());
     }
 
@@ -96,7 +96,7 @@ public class ItemService {
         return itemMapper.toDtoList(itemRepository.search(text));
     }
 
-    public CommentDto createComment (CommentDto commentDto, Integer authorId) {
+    public CommentDto createComment(CommentDto commentDto, Integer authorId) {
         Optional<User> author = userRepository.findById(authorId);
         if (author.isEmpty()) throw new NotFoundException("Author not found.");
         if (checkCommentTruth(commentDto.getItemId(), authorId))
@@ -128,10 +128,8 @@ public class ItemService {
 
     private ItemDto addBookings(ItemDto item) {
         LocalDateTime moment = LocalDateTime.now();
-        item.setLastBooking(bookingMapper.toDtoShort(bookingRepository
-                .findByItemIdAndEndIsBefore(item.getId(), moment)));
-        item.setNextBooking(bookingMapper.toDtoShort(bookingRepository
-                .findByItemIdAndStartIsAfter(item.getId(), moment)));
+        item.setLastBooking(bookingMapper.toDtoShort(bookingRepository.findByItemIdAndEndIsBefore(item.getId(), moment)));
+        item.setNextBooking(bookingMapper.toDtoShort(bookingRepository.findByItemIdAndStartIsAfter(item.getId(), moment)));
         return item;
     }
 
@@ -142,8 +140,8 @@ public class ItemService {
     }
 
     private boolean checkCommentTruth(Integer itemId, Integer authorId) {
-        List<Booking> allBookings = bookingRepository.findAllByBookerIdAndItemIdAndEndIsBefore(
-                authorId, itemId, LocalDateTime.now());
+        List<Booking> allBookings = bookingRepository.findAllByBookerIdAndItemIdAndEndIsBefore(authorId,
+                itemId, LocalDateTime.now());
         allBookings = allBookings.stream().filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
                 .collect(Collectors.toList());
         return allBookings.isEmpty();

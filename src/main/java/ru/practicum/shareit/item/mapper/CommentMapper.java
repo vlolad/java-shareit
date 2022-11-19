@@ -11,7 +11,8 @@ import java.util.List;
 public interface CommentMapper {
 
     Comment toEntity(CommentDto commentDto);
-    @Mapping(target = "authorName", source ="author.name")
+
+    @Mapping(target = "authorName", source = "author.name")
     @Mapping(target = "itemId", source = "item.id")
     CommentDto toDto(Comment comment);
 

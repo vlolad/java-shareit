@@ -130,7 +130,7 @@ public class BookingService {
         } catch (IllegalArgumentException e) {
             throw new BookingBadRequest("Unknown state: " + state);
         }
-        List<Item> userItems = itemRepository.findByOwner_id(userId);
+        List<Item> userItems = itemRepository.findByOwnerId(userId);
         List<Integer> userItemsIds = userItems.stream().map(Item::getId).collect(Collectors.toList());
         Sort sort = Sort.by("start").descending();
         switch (stateMode) {

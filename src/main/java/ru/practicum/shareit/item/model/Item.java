@@ -11,20 +11,20 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="items")
+@Table(name = "items")
 public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "item_generator")
     private Integer id;
-    @Column(name="name", length = 255, nullable = false)
+    @Column(name = "name", length = 255, nullable = false)
     private String name;
-    @Column(name="description")
+    @Column(name = "description")
     private String description;
-    @Column(name="is_available")
+    @Column(name = "is_available")
     private Boolean available;
     @ManyToOne
-    @JoinColumn(name="owner_id", referencedColumnName="id")
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
     // Для текущего спринта не требуется реализовывать
     /*@ManyToOne
