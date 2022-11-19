@@ -45,9 +45,10 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     @ResponseStatus(HttpStatus.OK)
-    public ItemDto getItem(@PathVariable Integer itemId) {
+    public ItemDto getItem(@PathVariable Integer itemId,
+                           @RequestHeader("X-Sharer-User-Id") Integer requesterId) {
         log.debug("GET-request at /items/{}", itemId);
-        return itemService.getItem(itemId);
+        return itemService.getItem(itemId, requesterId);
     }
 
     @GetMapping

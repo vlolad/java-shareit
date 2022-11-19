@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.dto.BookingDtoShort;
 import ru.practicum.shareit.validate.Create;
 
 import javax.validation.constraints.NotBlank;
@@ -21,6 +22,8 @@ public class ItemDto {
     private String description;
     @NotNull(groups = {Create.class})
     private Boolean available;
+    private BookingDtoShort lastBooking;
+    private BookingDtoShort nextBooking;
     //Для текущего спринта не требуется реализовывать.
     //private Integer request;
 }
