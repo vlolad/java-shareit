@@ -50,5 +50,6 @@ CREATE TABLE comments
     text      VARCHAR                                 NOT NULL,
     item_id   BIGINT REFERENCES items (id),
     author_id BIGINT REFERENCES users (id),
+    creation_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     CONSTRAINT pk_comment PRIMARY KEY (id)
 );

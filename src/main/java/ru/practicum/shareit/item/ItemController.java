@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.validate.Create;
 
@@ -64,5 +65,15 @@ public class ItemController {
         log.debug("GET-request at /items/search?text={}", text);
         if (text.isBlank()) return Collections.emptyList();
         return itemService.searchItems(text);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto createComment(@PathVariable Integer itemId,
+                                    @RequestBody @Valid CommentDto commentText,
+                                    @RequestHeader("X-Sharer-User-Id") Integer authorId) {
+        log.debug("POST-request at /items/{}/comment", itemId);
+        commentText.setItemId(itemId);
+        return itemService.createComment(commentText, authorId);
     }
 }

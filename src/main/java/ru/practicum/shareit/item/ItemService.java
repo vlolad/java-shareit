@@ -4,11 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.handler.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.exception.BadCommentException;
 import ru.practicum.shareit.item.exception.ItemBadRequestException;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
@@ -28,21 +35,26 @@ public class ItemService {
     private final ItemMapper itemMapper;
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper;
+    private final CommentMapper commentMapper;
+    private final CommentRepository commentRepository;
 
     @Autowired
     public ItemService(ItemRepository itemRepository, UserRepository userRepository,
                        ItemMapper itemMapper, BookingRepository bookingRepository,
-                       BookingMapper bookingMapper) {
+                       BookingMapper bookingMapper, CommentMapper commentMapper,
+                       CommentRepository commentRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.itemMapper = itemMapper;
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
+        this.commentMapper = commentMapper;
+        this.commentRepository = commentRepository;
     }
 
     public ItemDto create(ItemDto item, Integer ownerId) {
         Optional<User> owner = userRepository.findById(ownerId);
-        if (owner.isEmpty()) throw new NotFoundException("Owner ID not found.");
+        if (owner.isEmpty()) throw new NotFoundException("Owner not found.");
         Item newItem = itemMapper.toEntity(item);
         newItem.setOwner(owner.get());
         log.debug("Saving new item: {}", newItem);
@@ -64,6 +76,7 @@ public class ItemService {
         if (item.isEmpty()) throw new NotFoundException("Item with ID: " + itemId + " not found.");
         log.debug("Item with ID: {} found successfully.", itemId);
         ItemDto itemDto = itemMapper.toDto(item.get());
+        addComments(itemDto);
         if (!item.get().getOwner().getId().equals(requesterId)) {
             return itemDto;
         }
@@ -81,6 +94,19 @@ public class ItemService {
     public List<ItemDto> searchItems(String text) {
         log.debug("Searching: {}", text);
         return itemMapper.toDtoList(itemRepository.search(text));
+    }
+
+    public CommentDto createComment (CommentDto commentDto, Integer authorId) {
+        Optional<User> author = userRepository.findById(authorId);
+        if (author.isEmpty()) throw new NotFoundException("Author not found.");
+        if (checkCommentTruth(commentDto.getItemId(), authorId))
+            throw new BadCommentException("Probably, comment not truly.");
+        commentDto.setAuthorName(author.get().getName());
+        Comment comment = commentMapper.toEntity(commentDto);
+        comment.setAuthor(author.get());
+        comment.setItem(itemRepository.findById(commentDto.getItemId()).get());
+        comment.setCreated(LocalDateTime.now());
+        return commentMapper.toDto(commentRepository.save(comment));
     }
 
     private Item patchItem(Item item, ItemDto newItem) {
@@ -107,5 +133,19 @@ public class ItemService {
         item.setNextBooking(bookingMapper.toDtoShort(bookingRepository
                 .findByItemIdAndStartIsAfter(item.getId(), moment)));
         return item;
+    }
+
+    private ItemDto addComments(ItemDto item) {
+        List<Comment> comments = commentRepository.findAllByItemIdOrderByCreatedDesc(item.getId());
+        item.setComments(commentMapper.toDtoList(comments));
+        return item;
+    }
+
+    private boolean checkCommentTruth(Integer itemId, Integer authorId) {
+        List<Booking> allBookings = bookingRepository.findAllByBookerIdAndItemIdAndEndIsBefore(
+                authorId, itemId, LocalDateTime.now());
+        allBookings = allBookings.stream().filter(b -> b.getStatus().equals(BookingStatus.APPROVED))
+                .collect(Collectors.toList());
+        return allBookings.isEmpty();
     }
 }

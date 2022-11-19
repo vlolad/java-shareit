@@ -18,6 +18,7 @@ import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.handler.model.ErrorResponse;
 import ru.practicum.shareit.handler.model.ValidationErrorResponse;
 import ru.practicum.shareit.handler.model.Violation;
+import ru.practicum.shareit.item.exception.BadCommentException;
 import ru.practicum.shareit.item.exception.ItemBadRequestException;
 import ru.practicum.shareit.user.exception.UserCreationException;
 
@@ -36,11 +37,17 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleHibernateException(BasicPathUsageException e){
+    public ResponseEntity<String> handleHibernateException(BasicPathUsageException e) {
         log.error(e.getMessage());
         log.debug(Arrays.toString(e.getStackTrace()));
-        return new ResponseEntity<>("Heh: " + e.getMessage() + "||" + e.getAttribute(),
+        return new ResponseEntity<>(e.getMessage() + "||" + e.getAttribute(),
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleCommentNotTrueException(BadCommentException e) {
+        log.error("CommentNotTrueException: {}", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
     }
 
     @ExceptionHandler
@@ -69,20 +76,20 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleBookingCreateException(final BookingCreateException e){
+    public ResponseEntity<String> handleBookingCreateException(final BookingCreateException e) {
         log.error("BookingCreateException: {}", e.getMessage());
         return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleBookingStatusChangeException(final BookingStatusChangeException e){
+    public ResponseEntity<String> handleBookingStatusChangeException(final BookingStatusChangeException e) {
         log.error("BookingStatusChangeException: {}", e.getMessage());
         return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleBookingBadRequest(final BookingBadRequest e){
+    public ErrorResponse handleBookingBadRequest(final BookingBadRequest e) {
         log.error("BookingBadRequest: {}", e.getMessage());
         return new ErrorResponse(e.getMessage(), "Only our types allowed.");
     }
@@ -96,7 +103,7 @@ public class ErrorHandler {
         ValidationErrorResponse error = new ValidationErrorResponse();
         for (ConstraintViolation violation : e.getConstraintViolations()) {
             error.getViolations().add(
-                    new Violation(((PathImpl)violation.getPropertyPath()).getLeafNode().getName(),
+                    new Violation(((PathImpl) violation.getPropertyPath()).getLeafNode().getName(),
                             violation.getMessage()));
         }
         return error;

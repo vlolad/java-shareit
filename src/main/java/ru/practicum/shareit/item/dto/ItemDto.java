@@ -9,6 +9,7 @@ import ru.practicum.shareit.validate.Create;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +25,7 @@ public class ItemDto {
     private Boolean available;
     private BookingDtoShort lastBooking;
     private BookingDtoShort nextBooking;
+    private List<CommentDto> comments;
     //Для текущего спринта не требуется реализовывать.
     //private Integer request;
 }
