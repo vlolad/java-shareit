@@ -21,8 +21,10 @@ public interface BookingMapper {
 
     @Mapping(target = "bookerId", source = "booker.id")
     BookingDtoShort toDtoShort(Booking booking);
+
     @Mapping(target = "bookerId", source = "booker.id")
     BookingDtoShort dtoToDtoShort(BookingDto bookingDto);
+
     List<BookingDtoShort> toDtoShortList(List<Booking> bookings);
 
     @Mapping(target = "item.id", source = "itemId")
@@ -31,5 +33,6 @@ public interface BookingMapper {
     List<BookingDto> toDtoList(List<Booking> bookings);
 
     BookingDto.MiniBooker toMiniBooker(User booker);
+
     BookingDto.MiniItem toMiniItem(Item item);
 }
