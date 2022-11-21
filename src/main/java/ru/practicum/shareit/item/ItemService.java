@@ -160,11 +160,11 @@ public class ItemService {
             List<BookingDtoShort> bookings = bookingsMap.get(item.getId());
             if (bookings == null || bookings.isEmpty()) return;
             bookings = bookings.stream().sorted(Comparator.comparing(BookingDtoShort::getEnd)).collect(Collectors.toList());
-            for (int i = 0; i < bookings.size()-1; i++) {
+            for (int i = 0; i < bookings.size() - 1; i++) {
                 if (bookings.get(i).getEnd().isBefore(moment) &&
-                bookings.get(i+1).getStart().isAfter(moment)) {
+                        bookings.get(i + 1).getStart().isAfter(moment)) {
                     item.setLastBooking(bookings.get(i));
-                    item.setNextBooking(bookings.get(i+1));
+                    item.setNextBooking(bookings.get(i + 1));
                     break;
                 }
             }
