@@ -23,7 +23,7 @@ public class BookingController {
     }
 
     @PostMapping
-    public BookingDto createBooking(@RequestBody @Valid BookingRequest request,
+    public BookingDto create(@RequestBody @Valid BookingRequest request,
                                     @RequestHeader("X-Sharer-User-Id") Integer requesterId) {
         log.debug("POST-request at /bookings: {}", request);
         if (request.getStart().isAfter(request.getEnd()))
@@ -40,14 +40,14 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getBookingById(@PathVariable Integer bookingId,
+    public BookingDto getById(@PathVariable Integer bookingId,
                                      @RequestHeader("X-Sharer-User-Id") Integer userId) {
         log.debug("GET-request at /bookings/{}", bookingId);
         return bookingService.getById(bookingId, userId);
     }
 
     @GetMapping
-    public List<BookingDto> getBookings(@RequestParam (name = "state", required = false, defaultValue = "ALL")
+    public List<BookingDto> getAll(@RequestParam (name = "state", required = false, defaultValue = "ALL")
                                             String state,
             @RequestHeader("X-Sharer-User-Id") Integer userId) {
         log.debug("GET-request at /bookings");

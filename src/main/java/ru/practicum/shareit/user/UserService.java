@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.UserCreationException;
@@ -23,19 +24,21 @@ public class UserService {
         this.userMapper = userMapper;
     }
 
+    @Transactional
     public UserDto create(UserDto user) {
             log.debug("Creating user with email: {}", user.getEmail());
             return userMapper.toDto(userStorage.save(userMapper.toEntity(user)));
     }
 
+    @Transactional
     public UserDto patch(UserDto user) {
         Optional<User> oldUser = userStorage.findById(user.getId());
         if (oldUser.isPresent()) {
             log.debug("User with id: {} exists.", user.getId());
             if (userStorage.findUserByEmail(user.getEmail()).isEmpty()
                     || (user.getEmail().equals(oldUser.get().getEmail()))) {
-                User patchedUser = updateUser(oldUser.get(), user);
-                return userMapper.toDto(userStorage.save(patchedUser));
+                User patchedUser = patchUser(oldUser.get(), user);
+                return userMapper.toDto(patchedUser);
             } else {
                 log.error("Email already registered.");
                 throw new UserCreationException("User with such Email already exists.");
@@ -46,10 +49,12 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
         return userMapper.toDtoList(userStorage.findAll());
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUser(Integer userId) {
         Optional<User> user = userStorage.findById(userId);
         if (user.isPresent()) {
@@ -60,11 +65,12 @@ public class UserService {
         }
     }
 
+    @Transactional
     public void deleteUser(Integer userId) {
         userStorage.deleteById(userId);
     }
 
-    private User updateUser(User user, UserDto update) {
+    private User patchUser(User user, UserDto update) {
         if (update.getName() != null) {
             if (!update.getName().isBlank()) {
                 user.setName(update.getName());

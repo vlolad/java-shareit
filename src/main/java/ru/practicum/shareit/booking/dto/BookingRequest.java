@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 
@@ -18,8 +19,8 @@ public class BookingRequest {
 
     @Positive
     private Integer itemId;
-    @FutureOrPresent
+    @FutureOrPresent @NotNull
     private LocalDateTime start;
-    @Future
+    @Future @NotNull
     private LocalDateTime end;
 }

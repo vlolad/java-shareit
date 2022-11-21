@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequest;
 import ru.practicum.shareit.booking.exception.BookingBadRequest;
@@ -38,6 +39,7 @@ public class BookingService {
         this.itemRepository = itemRepository;
     }
 
+    @Transactional
     public BookingDto create(BookingRequest request, Integer requesterId) {
         Optional<Item> item = itemRepository.findById(request.getItemId());
         if (item.isEmpty()) throw new NotFoundException("Item not found.");
@@ -56,6 +58,7 @@ public class BookingService {
         return bookingMapper.toDto(bookingRepository.save(booking));
     }
 
+    @Transactional
     public BookingDto changeStatusByOwner(Integer bookingId, Boolean approved, Integer ownerId) {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
         if (booking.isEmpty()) throw new NotFoundException("Booking not found.");
@@ -72,9 +75,10 @@ public class BookingService {
             log.info("Reject booking id:{}", bookingId);
             booking.get().setStatus(BookingStatus.REJECTED);
         }
-        return bookingMapper.toDto(bookingRepository.save(booking.get()));
+        return bookingMapper.toDto(booking.get());
     }
 
+    @Transactional(readOnly = true)
     public BookingDto getById(Integer bookingId, Integer userId) {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
         if (booking.isEmpty()) throw new NotFoundException("Booking not found.");
@@ -87,15 +91,11 @@ public class BookingService {
         return bookingMapper.toDto(booking.get());
     }
 
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllByUser(String state, Integer userId) {
         if (userRepository.findById(userId).isEmpty())
             throw new NotFoundException("Requester not found");
-        StateMode stateMode;
-        try {
-            stateMode = StateMode.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            throw new BookingBadRequest("Unknown state: " + state);
-        }
+        StateMode stateMode = StateMode.parseState(state);
         Sort sort = Sort.by("start").descending();
         switch (stateMode) {
             case ALL:
@@ -121,15 +121,11 @@ public class BookingService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<BookingDto> getAllByUserOwner(String state, Integer userId) {
         if (userRepository.findById(userId).isEmpty())
             throw new NotFoundException("Requester not found");
-        StateMode stateMode;
-        try {
-            stateMode = StateMode.valueOf(state);
-        } catch (IllegalArgumentException e) {
-            throw new BookingBadRequest("Unknown state: " + state);
-        }
+        StateMode stateMode = StateMode.parseState(state);
         List<Item> userItems = itemRepository.findByOwnerId(userId);
         List<Integer> userItemsIds = userItems.stream().map(Item::getId).collect(Collectors.toList());
         Sort sort = Sort.by("start").descending();

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CreateItemRequest;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.validate.Create;
 
@@ -15,7 +16,7 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping("/items")
-@Validated
+@Validated //Без аннотации не работают валидации в методах по группам
 public class ItemController {
 
     private final ItemService itemService;
@@ -28,7 +29,7 @@ public class ItemController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated(Create.class)
-    public ItemDto createItem(@RequestBody @Valid ItemDto itemDto,
+    public ItemDto create(@RequestBody @Valid CreateItemRequest itemDto,
                               @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
         log.debug("POST-request at /items");
         return itemService.create(itemDto, ownerId);
@@ -36,7 +37,7 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     @ResponseStatus(HttpStatus.OK)
-    public ItemDto patchItem(@RequestBody ItemDto itemDto,
+    public ItemDto patch(@RequestBody CreateItemRequest itemDto,
                              @RequestHeader("X-Sharer-User-Id") Integer ownerId,
                              @PathVariable Integer itemId) {
         log.debug("PATCH-request at /items/{}", itemId);
@@ -46,7 +47,7 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     @ResponseStatus(HttpStatus.OK)
-    public ItemDto getItem(@PathVariable Integer itemId,
+    public ItemDto get(@PathVariable Integer itemId,
                            @RequestHeader("X-Sharer-User-Id") Integer requesterId) {
         log.debug("GET-request at /items/{}", itemId);
         return itemService.getItem(itemId, requesterId);
@@ -54,14 +55,14 @@ public class ItemController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ItemDto> getAllItems(@RequestHeader("X-Sharer-User-Id") Integer ownerId) {
+    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer ownerId) {
         log.debug("GET-request at /items. Owner ID: {}", ownerId);
         return itemService.getAllItemsByOwner(ownerId);
     }
 
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public List<ItemDto> searchItems(@RequestParam("text") String text) {
+    public List<ItemDto> search(@RequestParam("text") String text) {
         log.debug("GET-request at /items/search?text={}", text);
         if (text.isBlank()) return Collections.emptyList();
         return itemService.searchItems(text);

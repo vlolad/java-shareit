@@ -16,7 +16,7 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
-@Validated
+@Validated //Без аннотации не работают валидации в методах по группам
 public class UserController {
 
     private final UserService userService;
@@ -29,7 +29,7 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Validated(Create.class)
-    public UserDto createUser(@RequestBody @Valid UserDto user) {
+    public UserDto create(@RequestBody @Valid UserDto user) {
         log.debug("POST-request at /users");
         return userService.create(user);
     }
@@ -37,7 +37,7 @@ public class UserController {
     @PatchMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
     @Validated(Update.class)
-    public UserDto patchUser(@RequestBody @Valid UserDto user,
+    public UserDto patch(@RequestBody @Valid UserDto user,
                           @PathVariable Integer userId) {
         log.debug("PATCH-request at /users/{}", userId);
         user.setId(userId);
@@ -46,20 +46,20 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> getAllUsers() {
+    public List<UserDto> getAll() {
         log.debug("GET-request at /users");
         return userService.getAllUsers();
     }
 
     @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDto getUser(@PathVariable Integer userId) {
+    public UserDto getById(@PathVariable Integer userId) {
         log.debug("GET-request at /users/{}", userId);
         return userService.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable Integer userId) {
+    public ResponseEntity<String> delete(@PathVariable Integer userId) {
         log.warn("DELETE-request at /users/{}", userId);
         userService.deleteUser(userId);
         return new ResponseEntity<>("Request for delete user (id: " + userId + ")" +
