@@ -12,6 +12,8 @@ import java.util.List;
 public interface ItemMapper {
 
     Item toEntity(ItemDto itemDto);
+    
+
     Item toEntity(CreateItemRequest createItemRequest);
 
     @Mapping(target = "comments", ignore = true)
