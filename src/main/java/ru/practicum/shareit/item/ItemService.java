@@ -161,6 +161,7 @@ public class ItemService {
             List<BookingDtoShort> bookings = bookingsMap.getOrDefault(item.getId(), new ArrayList<>());
             if (bookings.isEmpty()) return;
             bookings = bookings.stream().sorted(Comparator.comparing(BookingDtoShort::getEnd)).collect(Collectors.toList());
+            //Поменял логику поиска
             item.setLastBooking(bookings.stream().filter(b -> b.getEnd().isBefore(moment))
                     .collect(Collectors.toList()).get(0));
             item.setNextBooking(bookings.stream().filter(b -> b.getStart().isAfter(moment))
