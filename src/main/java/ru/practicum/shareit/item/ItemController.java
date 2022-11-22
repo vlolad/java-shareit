@@ -16,7 +16,6 @@ import java.util.*;
 @Slf4j
 @RestController
 @RequestMapping("/items")
-@Validated //Без аннотации не работают валидации в методах по группам
 public class ItemController {
 
     private final ItemService itemService;
@@ -28,9 +27,8 @@ public class ItemController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Validated(Create.class)
-    public ItemDto create(@RequestBody @Valid CreateItemRequest itemDto,
-                              @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
+    public ItemDto create(@RequestBody @Validated(Create.class) CreateItemRequest itemDto,
+                          @RequestHeader("X-Sharer-User-Id") Integer ownerId) {
         log.debug("POST-request at /items");
         return itemService.create(itemDto, ownerId);
     }

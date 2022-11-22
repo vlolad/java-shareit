@@ -10,13 +10,11 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.validate.Create;
 import ru.practicum.shareit.validate.Update;
 
-import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
-@Validated //Без аннотации не работают валидации в методах по группам
 public class UserController {
 
     private final UserService userService;
@@ -28,17 +26,15 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Validated(Create.class)
-    public UserDto create(@RequestBody @Valid UserDto user) {
+    public UserDto create(@RequestBody @Validated(Create.class) UserDto user) {
         log.debug("POST-request at /users");
         return userService.create(user);
     }
 
     @PatchMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    @Validated(Update.class)
-    public UserDto patch(@RequestBody @Valid UserDto user,
-                          @PathVariable Integer userId) {
+    public UserDto patch(@RequestBody @Validated(Update.class) UserDto user,
+                         @PathVariable Integer userId) {
         log.debug("PATCH-request at /users/{}", userId);
         user.setId(userId);
         return userService.patch(user);

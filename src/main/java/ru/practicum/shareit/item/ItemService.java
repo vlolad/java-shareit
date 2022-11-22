@@ -152,22 +152,19 @@ public class ItemService {
         if (shortBookings.isEmpty()) return items;
         Map<Integer, List<BookingDtoShort>> bookingsMap = new HashMap<>();
         for (BookingDto booking : shortBookings) {
-            bookingsMap.putIfAbsent(booking.getItemId(), new ArrayList<>());
-            bookingsMap.get(booking.getItemId()).add(bookingMapper.dtoToDtoShort(booking));
+            final List<BookingDtoShort> bookingsByItemId = bookingsMap
+                    .computeIfAbsent(booking.getItemId(), k -> new ArrayList<>());
+            bookingsByItemId.add(bookingMapper.dtoToDtoShort(booking));
         }
         LocalDateTime moment = LocalDateTime.now();
         return items.stream().peek(item -> {
-            List<BookingDtoShort> bookings = bookingsMap.get(item.getId());
-            if (bookings == null || bookings.isEmpty()) return;
+            List<BookingDtoShort> bookings = bookingsMap.getOrDefault(item.getId(), new ArrayList<>());
+            if (bookings.isEmpty()) return;
             bookings = bookings.stream().sorted(Comparator.comparing(BookingDtoShort::getEnd)).collect(Collectors.toList());
-            for (int i = 0; i < bookings.size() - 1; i++) {
-                if (bookings.get(i).getEnd().isBefore(moment) &&
-                        bookings.get(i + 1).getStart().isAfter(moment)) {
-                    item.setLastBooking(bookings.get(i));
-                    item.setNextBooking(bookings.get(i + 1));
-                    break;
-                }
-            }
+            item.setLastBooking(bookings.stream().filter(b -> b.getEnd().isBefore(moment))
+                    .collect(Collectors.toList()).get(0));
+            item.setNextBooking(bookings.stream().filter(b -> b.getStart().isAfter(moment))
+                    .collect(Collectors.toList()).get(0));
         }).collect(Collectors.toList());
     }
 
