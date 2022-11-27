@@ -6,18 +6,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.validate.Create;
 import ru.practicum.shareit.validate.Update;
 
-import javax.validation.Valid;
 import java.util.*;
 
 @Slf4j
 @RestController
 @RequestMapping(path = "/users")
-@Validated
 public class UserController {
 
     private final UserService userService;
@@ -29,44 +26,39 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Validated(Create.class)
-    public UserDto createUser(@RequestBody @Valid UserDto user) {
+    public UserDto create(@RequestBody @Validated(Create.class) UserDto user) {
         log.debug("POST-request at /users");
-        return userService.createUser(user);
+        return userService.create(user);
     }
 
     @PatchMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    @Validated(Update.class)
-    public UserDto patchUser(@RequestBody @Valid UserDto user,
-                          @PathVariable Integer userId) {
+    public UserDto patch(@RequestBody @Validated(Update.class) UserDto user,
+                         @PathVariable Integer userId) {
         log.debug("PATCH-request at /users/{}", userId);
         user.setId(userId);
-        return userService.patchUser(user);
+        return userService.patch(user);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<UserDto> getAllUsers() {
+    public List<UserDto> getAll() {
         log.debug("GET-request at /users");
         return userService.getAllUsers();
     }
 
     @GetMapping("/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserDto getUser(@PathVariable Integer userId) {
+    public UserDto getById(@PathVariable Integer userId) {
         log.debug("GET-request at /users/{}", userId);
         return userService.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<String> deleteUser(@PathVariable Integer userId) {
+    public ResponseEntity<String> delete(@PathVariable Integer userId) {
         log.warn("DELETE-request at /users/{}", userId);
-        boolean del = userService.deleteUser(userId);
-        if (del) {
-            return new ResponseEntity<>("User (id: " + userId + ") deleted successfully.", HttpStatus.OK);
-        } else {
-            throw new NotFoundException("User (id: " + userId + ") not found.");
-        }
+        userService.deleteUser(userId);
+        return new ResponseEntity<>("Request for delete user (id: " + userId + ")" +
+                " executed successfully.", HttpStatus.OK);
     }
 }

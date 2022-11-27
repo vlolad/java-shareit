@@ -3,50 +3,42 @@ package ru.practicum.shareit.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.exception.UserCreationException;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class UserService {
 
-    private int id = 0;
-    private final UserStorage userStorage;
+    private final UserRepository userStorage;
+    private final UserMapper userMapper;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(UserRepository userStorage, UserMapper userMapper) {
         this.userStorage = userStorage;
+        this.userMapper = userMapper;
     }
 
-    public UserDto createUser(UserDto user) {
-        if (checkEmail(user)) {
+    @Transactional
+    public UserDto create(UserDto user) {
             log.debug("Creating user with email: {}", user.getEmail());
-            user.setId(generateId());
-            userStorage.put(user.getId(), UserMapper.toUser(user));
-            log.info("User successfully created >>>");
-            log.debug(user.toString());
-            return user;
-        } else {
-            log.error("Email already registered.");
-            throw new UserCreationException("User with such Email already exists.");
-        }
+            return userMapper.toDto(userStorage.save(userMapper.toEntity(user)));
     }
 
-    public UserDto patchUser(UserDto user) {
-        User oldUser = userStorage.get(user.getId());
-        if (oldUser != null) {
+    @Transactional
+    public UserDto patch(UserDto user) {
+        Optional<User> oldUser = userStorage.findById(user.getId());
+        if (oldUser.isPresent()) {
             log.debug("User with id: {} exists.", user.getId());
-            if (checkEmail(user) || (user.getEmail().equals(oldUser.getEmail()))) {
-                User patchedUser = updateUser(oldUser, user);
-                userStorage.replace(user.getId(), patchedUser);
-                log.info("User with id: {} successfully patched.", patchedUser.getId());
-                log.debug(patchedUser.toString());
-                return UserMapper.toUserDto(patchedUser);
+            if (userStorage.findUserByEmail(user.getEmail()).isEmpty()
+                    || (user.getEmail().equals(oldUser.get().getEmail()))) {
+                User patchedUser = patchUser(oldUser.get(), user);
+                return userMapper.toDto(patchedUser);
             } else {
                 log.error("Email already registered.");
                 throw new UserCreationException("User with such Email already exists.");
@@ -57,20 +49,28 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
-        return userStorage.getAll().values().stream()
-                .map(UserMapper::toUserDto).collect(Collectors.toList());
+        return userMapper.toDtoList(userStorage.findAll());
     }
 
+    @Transactional(readOnly = true)
     public UserDto getUser(Integer userId) {
-        return UserMapper.toUserDto(userStorage.get(userId));
+        Optional<User> user = userStorage.findById(userId);
+        if (user.isPresent()) {
+            return userMapper.toDto(user.get());
+        } else {
+            log.warn("User with such ID not found.");
+            throw new NotFoundException("User with ID: " + userId + " not found.");
+        }
     }
 
-    public boolean deleteUser(Integer userId) {
-        return (userStorage.remove(userId) != null);
+    @Transactional
+    public void deleteUser(Integer userId) {
+        userStorage.deleteById(userId);
     }
 
-    private User updateUser(User user, UserDto update) {
+    private User patchUser(User user, UserDto update) {
         if (update.getName() != null) {
             if (!update.getName().isBlank()) {
                 user.setName(update.getName());
@@ -82,16 +82,5 @@ public class UserService {
             }
         }
         return user;
-    }
-
-    private Integer generateId() {
-        log.debug("Generating id...");
-        return ++id;
-    }
-
-    private boolean checkEmail(UserDto user) {
-        Set<String> emails = userStorage.getAll().values().stream()
-                .map(User::getEmail).collect(Collectors.toSet());
-        return !emails.contains(user.getEmail());
     }
 }

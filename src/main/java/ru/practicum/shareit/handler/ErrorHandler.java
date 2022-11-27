@@ -1,6 +1,7 @@
 package ru.practicum.shareit.handler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.query.criteria.internal.BasicPathUsageException;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,15 +11,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.shareit.booking.exception.BookingBadRequest;
+import ru.practicum.shareit.booking.exception.BookingCreateException;
+import ru.practicum.shareit.booking.exception.BookingStatusChangeException;
 import ru.practicum.shareit.handler.exception.NotFoundException;
+import ru.practicum.shareit.handler.model.ErrorResponse;
 import ru.practicum.shareit.handler.model.ValidationErrorResponse;
 import ru.practicum.shareit.handler.model.Violation;
+import ru.practicum.shareit.item.exception.BadCommentException;
 import ru.practicum.shareit.item.exception.ItemBadRequestException;
 import ru.practicum.shareit.user.exception.UserCreationException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
+import java.util.Arrays;
 import java.util.Locale;
 
 @Slf4j
@@ -27,6 +34,20 @@ public class ErrorHandler {
 
     static {
         Locale.setDefault(new Locale("en"));
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleHibernateException(BasicPathUsageException e) {
+        log.error(e.getMessage());
+        log.debug(Arrays.toString(e.getStackTrace()));
+        return new ResponseEntity<>(e.getMessage() + "||" + e.getAttribute(),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleCommentNotTrueException(BadCommentException e) {
+        log.error("CommentNotTrueException: {}", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
     }
 
     @ExceptionHandler
@@ -54,6 +75,25 @@ public class ErrorHandler {
         return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
     }
 
+    @ExceptionHandler
+    public ResponseEntity<String> handleBookingCreateException(final BookingCreateException e) {
+        log.error("BookingCreateException: {}", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleBookingStatusChangeException(final BookingStatusChangeException e) {
+        log.error("BookingStatusChangeException: {}", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingBadRequest(final BookingBadRequest e) {
+        log.error("BookingBadRequest: {}", e.getMessage());
+        return new ErrorResponse(e.getMessage(), "Only our types allowed.");
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
@@ -63,7 +103,7 @@ public class ErrorHandler {
         ValidationErrorResponse error = new ValidationErrorResponse();
         for (ConstraintViolation violation : e.getConstraintViolations()) {
             error.getViolations().add(
-                    new Violation(((PathImpl)violation.getPropertyPath()).getLeafNode().getName(),
+                    new Violation(((PathImpl) violation.getPropertyPath()).getLeafNode().getName(),
                             violation.getMessage()));
         }
         return error;
