@@ -1,9 +1,10 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.request.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.validate.Create;
+import ru.practicum.shareit.validate.Update;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -11,14 +12,9 @@ import javax.validation.constraints.NotNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateItemRequest {
+public class ItemRequestShort {
 
-    private Integer id;
-    @NotBlank(groups = {Create.class})
-    private String name;
-    @NotBlank(groups = {Create.class})
+    @NotNull(groups = {Create.class, Update.class})
+    @NotBlank(groups = {Create.class, Update.class})
     private String description;
-    @NotNull(groups = {Create.class})
-    private Boolean available;
-    private Integer requestId;
 }

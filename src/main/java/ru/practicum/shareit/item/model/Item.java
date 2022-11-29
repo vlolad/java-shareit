@@ -27,10 +27,8 @@ public class Item {
     @ManyToOne
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
-    // Для текущего спринта не требуется реализовывать
-    /*@ManyToOne
-    @JoinColumn(name="request_id", referencedColumnName="id")
-    private ItemRequest request;*/
+    @Column(name = "request_id")
+    private Integer requestId;
 
     @Override
     public boolean equals(Object o) {
