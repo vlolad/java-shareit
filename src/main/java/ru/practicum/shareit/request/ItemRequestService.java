@@ -62,7 +62,7 @@ public class ItemRequestService {
     @Transactional(readOnly = true)
     public List<ItemRequestDto> getAll(Integer userId, Integer from, Integer size) {
         findUser(userId);
-        Pageable page = PageRequest.of(from, size, Sort.by("created").ascending());
+        Pageable page = PageRequest.of(from / size, size, Sort.by("created").ascending());
         List<ItemRequestDto> requests = mapper.toListDto(
                 repository.findAllByRequesterIdNot(userId, page).getContent());
         return addItems(requests);

@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -90,20 +92,22 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> getAllItemsByOwner(Integer ownerId) {
+    public List<ItemDto> getAllByOwner(Integer ownerId, Integer from, Integer size) {
         if (userRepository.findById(ownerId).isEmpty())
             throw new NotFoundException("Owner (id: " + ownerId + ") not found.");
         log.info("Found owner (id:{}), return items.", ownerId);
-        List<ItemDto> itemsList = itemMapper.toDtoList(itemRepository.findByOwnerId(ownerId));
+        Pageable page = PageRequest.of(from / size, size);
+        List<ItemDto> itemsList = itemMapper.toDtoList(itemRepository.findByOwnerId(ownerId, page));
         addBookings(itemsList);
         addComments(itemsList);
         return itemsList;
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> search(String text, Integer from, Integer size) {
         log.debug("Searching: {}", text);
-        return itemMapper.toDtoList(itemRepository.search(text));
+        Pageable page = PageRequest.of(from / size, size);
+        return itemMapper.toDtoList(itemRepository.search(text, page));
     }
 
     @Transactional
