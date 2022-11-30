@@ -45,10 +45,10 @@ public class BookingService {
     public BookingDto create(BookingRequest request, Integer requesterId) {
         Optional<Item> item = itemRepository.findById(request.getItemId());
         if (item.isEmpty()) throw new NotFoundException("Item not found.");
-        if (item.get().getAvailable().equals(Boolean.FALSE))
-            throw new BookingCreateException("This item not available.");
         if (item.get().getOwner().getId().equals(requesterId))
             throw new NotFoundException("Booking your item? Why?");
+        if (item.get().getAvailable().equals(Boolean.FALSE))
+            throw new BookingCreateException("This item not available.");
         Booking booking = bookingMapper.toEntityFromRequest(request);
         booking.setItem(item.get());
 
@@ -66,7 +66,7 @@ public class BookingService {
         if (booking.isEmpty()) throw new NotFoundException("Booking not found.");
 
         User owner = booking.get().getItem().getOwner();
-        if (!owner.getId().equals(ownerId)) throw new NotFoundException("This is not user's booking.");
+        if (!owner.getId().equals(ownerId)) throw new NotFoundException("This is not user's item.");
         if (booking.get().getStatus().equals(BookingStatus.APPROVED))
             throw new BookingStatusChangeException("Booking already approved");
 
