@@ -138,6 +138,9 @@ public class ItemService {
         if (!Objects.equals(newItem.getAvailable(), null)) {
             item.setAvailable(newItem.getAvailable());
         }
+        if (!Objects.equals(newItem.getRequestId(), null)) {
+            item.setRequestId(newItem.getRequestId());
+        }
         return item;
     }
 
@@ -166,10 +169,12 @@ public class ItemService {
             if (bookings.isEmpty()) return;
             bookings = bookings.stream().sorted(Comparator.comparing(BookingDtoShort::getEnd)).collect(Collectors.toList());
             //Поменял логику поиска
-            item.setLastBooking(bookings.stream().filter(b -> b.getEnd().isBefore(moment))
-                    .collect(Collectors.toList()).get(0));
-            item.setNextBooking(bookings.stream().filter(b -> b.getStart().isAfter(moment))
-                    .collect(Collectors.toList()).get(0));
+            List<BookingDtoShort> previousBookings = bookings.stream().filter(b -> b.getEnd().isBefore(moment))
+                    .sorted(Comparator.comparing(BookingDtoShort::getEnd)).collect(Collectors.toList());
+            if (!previousBookings.isEmpty()) item.setLastBooking(previousBookings.get(0));
+            List<BookingDtoShort> futureBookings = bookings.stream().filter(b -> b.getStart().isAfter(moment))
+                    .sorted(Comparator.comparing(BookingDtoShort::getStart).reversed()).collect(Collectors.toList());
+            if (!futureBookings.isEmpty()) item.setNextBooking(futureBookings.get(0));
         }).collect(Collectors.toList());
     }
 
