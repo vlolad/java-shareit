@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoShort;
 import ru.practicum.shareit.booking.dto.BookingRequest;
 import ru.practicum.shareit.booking.exception.BookingBadRequest;
 import ru.practicum.shareit.booking.exception.BookingCreateException;
@@ -254,6 +255,32 @@ public class BookingTests {
         assertThrows(NotFoundException.class, () -> service.getAllByUserOwner("ALL", 1, 0, 20));
     }
 
+    @Test
+    void testBookingMapper() {
+        Booking booking = makeBooking(1);
+        BookingDto bookingDto = mapper.toDto(booking);
+        Booking returnBooking = mapper.toEntity(bookingDto);
+        assertThat(booking, equalTo(returnBooking));
+        List<Booking> bookings = makeBookingsList();
+        List<BookingDtoShort> shortBookings = mapper.toDtoShortList(bookings);
+        assertThat(shortBookings.size(), equalTo(bookings.size()));
+        assertNull(mapper.toDtoShortList(null));
+        Item item = new Item(1, "testItem", "testing_1",
+                Boolean.TRUE, makeItemOwner(49), null);
+        BookingDto.MiniItem miniItem = mapper.toMiniItem(item);
+        assertThat(miniItem.getId(), equalTo(item.getId()));
+        assertThat(miniItem.getName(), equalTo(item.getName()));
+        User booker = makeBooker(1);
+        BookingDto.MiniBooker miniBooker = mapper.toMiniBooker(booker);
+        assertThat(miniBooker.getId(), equalTo(booker.getId()));
+        assertThat(miniBooker.getName(), equalTo(booker.getName()));
+        bookingDto.setBooker(miniBooker);
+        bookingDto.setItem(miniItem);
+        Booking newBooking = mapper.toEntity(bookingDto);
+        assertThat(newBooking.getItem().getName(), equalTo(miniItem.getName()));
+        assertThat(newBooking.getBooker().getName(), equalTo(miniBooker.getName()));
+    }
+
     private User makeItemOwner(Integer id) {
         return new User(id, "testOwner", "test@ya.ru");
     }
@@ -269,5 +296,10 @@ public class BookingTests {
                     null, null, BookingStatus.WAITING));
         }
         return list;
+    }
+
+    private Booking makeBooking(Integer id) {
+        return new Booking(id, moment.plusSeconds(id), moment.plusHours(id),
+                null, null, BookingStatus.WAITING);
     }
 }

@@ -200,6 +200,7 @@ public class ItemTests {
         CommentDto result = service.createComment(commentMapper.toDto(makeComment(1)), 1);
         assertThat(result.getAuthorName(), equalTo(user.getName()));
         assertThat(result.getItemId(), equalTo(item.getId()));
+        assertEquals(commentMapper.toEntity(result), makeComment(1));
     }
 
     private User makeItemOwner(Integer id) {
