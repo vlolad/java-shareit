@@ -35,8 +35,8 @@ public class UserService {
         Optional<User> oldUser = userStorage.findById(user.getId());
         if (oldUser.isPresent()) {
             log.debug("User with id: {} exists.", user.getId());
-            if (userStorage.findUserByEmail(user.getEmail()).isEmpty()
-                    || (user.getEmail().equals(oldUser.get().getEmail()))) {
+            if ((user.getEmail().equals(oldUser.get().getEmail()))
+                    || userStorage.findUserByEmail(user.getEmail()).isEmpty()) {
                 User patchedUser = patchUser(oldUser.get(), user);
                 return userMapper.toDto(patchedUser);
             } else {
