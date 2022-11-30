@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
@@ -26,6 +28,7 @@ import java.util.Optional;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ItemRequestTests {
@@ -64,8 +67,8 @@ public class ItemRequestTests {
     @Test
     void testCreateRequest() {
         User user = makeUser(1);
-        Mockito.when(mockUserRepo.findById(1)).thenReturn(Optional.of(user));
-        Mockito.when(mockRepo.save(Mockito.any(ItemRequest.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(mockUserRepo.findById(1)).thenReturn(Optional.of(user));
+        when(mockRepo.save(Mockito.any(ItemRequest.class))).thenAnswer(i -> i.getArguments()[0]);
         ItemRequestShort request = makeShortRequest();
         ItemRequestDto result = service.create(request, 1);
         assertThat(result.getDescription(), equalTo(request.getDescription()));
@@ -74,19 +77,96 @@ public class ItemRequestTests {
 
     @Test
     void testCreateRequestNotFound() {
-        Mockito.when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.create(makeShortRequest(), 1));
     }
 
     @Test
     void testGetAllByUser() {
-        Mockito.when(mockUserRepo.findById(1)).thenReturn(Optional.of(new User()));
-        Mockito.when(mockRepo.findAllByRequesterId(Mockito.anyInt(), Mockito.any(Sort.class)))
+        when(mockUserRepo.findById(1)).thenReturn(Optional.of(new User()));
+        when(mockRepo.findAllByRequesterId(Mockito.anyInt(), Mockito.any(Sort.class)))
                 .thenReturn(makeRequestsList());
-        Mockito.when(mockItemRepo.findAllByRequestIdIn(Mockito.anyList())).thenReturn(makeItemsList());
+        when(mockItemRepo.findAllByRequestIdIn(Mockito.anyList())).thenReturn(makeItemsList());
         List<ItemRequestDto> result = service.getByUser(1);
         assertThat(result.size(), equalTo(3));
         assertFalse(result.get(0).getItems().isEmpty());
+    }
+
+    @Test
+    void testGetAllByUserNotFound() {
+        when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        assertThrows(NotFoundException.class, () -> service.getByUser(1));
+    }
+
+    @Test
+    void testGetAll() {
+        when(mockUserRepo.findById(1)).thenReturn(Optional.of(new User()));
+        when(mockRepo.findAllByRequesterIdNot(Mockito.anyInt(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(makeRequestsList()));
+        when(mockItemRepo.findAllByRequestIdIn(Mockito.anyList())).thenReturn(makeItemsList());
+        List<ItemRequestDto> result = service.getAll(1, 0, 20);
+        assertThat(result.size(), equalTo(3));
+        assertFalse(result.get(0).getItems().isEmpty());
+    }
+
+    @Test
+    void testGetAllNoItems() {
+        when(mockUserRepo.findById(1)).thenReturn(Optional.of(new User()));
+        when(mockRepo.findAllByRequesterIdNot(Mockito.anyInt(), Mockito.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(makeRequestsList()));
+        when(mockItemRepo.findAllByRequestIdIn(Mockito.anyList())).thenReturn(List.of());
+        List<ItemRequestDto> result = service.getAll(1, 0, 20);
+        assertThat(result.size(), equalTo(3));
+        assertTrue(result.get(0).getItems().isEmpty());
+
+        when(mockItemRepo.findAllByRequestIdIn(Mockito.anyList())).thenReturn(null);
+        List<ItemRequestDto> result2 = service.getAll(1, 0, 20);
+        assertThat(result2.size(), equalTo(3));
+        assertTrue(result2.get(0).getItems().isEmpty());
+    }
+
+    @Test
+    void testGetAllNotFound() {
+        when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        assertThrows(NotFoundException.class, () -> service.getAll(1, 0, 20));
+    }
+
+    @Test
+    void testGetById() {
+        when(mockUserRepo.findById(1)).thenReturn(Optional.of(new User()));
+        when(mockRepo.findById(Mockito.anyInt())).thenReturn(Optional.of(makeRequest(1)));
+        when(mockItemRepo.findAllByRequestId(Mockito.anyInt())).thenReturn(makeItemsList());
+        ItemRequestDto result = service.getById(1, 1);
+        assertThat(result.getDescription(), equalTo(makeRequest(1).getDescription()));
+        assertThat(result.getItems().size(), equalTo(3));
+    }
+
+    @Test
+    void testGetByIdNoItems() {
+        when(mockUserRepo.findById(1)).thenReturn(Optional.of(new User()));
+        when(mockRepo.findById(Mockito.anyInt())).thenReturn(Optional.of(makeRequest(1)));
+        when(mockItemRepo.findAllByRequestId(Mockito.anyInt())).thenReturn(List.of());
+        ItemRequestDto result = service.getById(1, 1);
+        assertThat(result.getDescription(), equalTo(makeRequest(1).getDescription()));
+        assertTrue(result.getItems().isEmpty());
+
+        when(mockItemRepo.findAllByRequestId(Mockito.anyInt())).thenReturn(null);
+        ItemRequestDto result2 = service.getById(1, 1);
+        assertThat(result2.getDescription(), equalTo(makeRequest(1).getDescription()));
+        assertTrue(result2.getItems().isEmpty());
+    }
+
+    @Test
+    void testGetByIdUserNotFound() {
+        when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        assertThrows(NotFoundException.class, () -> service.getById(1, 1));
+    }
+
+    @Test
+    void testGetByIdRequestNotFound() {
+        when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.of(new User()));
+        when(mockRepo.findById(Mockito.anyInt())).thenReturn(Optional.empty());
+        assertThrows(NotFoundException.class, () -> service.getById(1, 1));
     }
 
     private ItemRequest makeRequest(Integer id) {
