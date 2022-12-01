@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.booking.*;
@@ -181,7 +182,7 @@ public class ItemTests {
     @Test
     void testSearch() {
         Mockito.when(mockItemRepo.search(Mockito.anyString(), Mockito.any(Pageable.class)))
-                .thenReturn(makeItemsList());
+                .thenReturn(new PageImpl<>(makeItemsList()));
         assertFalse(service.search("text", 0, 20).isEmpty());
     }
 
