@@ -12,6 +12,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequest;
+import ru.practicum.shareit.booking.exception.BookingBadRequest;
+import ru.practicum.shareit.booking.exception.BookingStatusChangeException;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -160,6 +162,19 @@ public class BookingControllerTests {
     }
 
     @Test
+    void testSetStatusByOwnerAlreadyApproved() throws Exception {
+        when(service.changeStatusByOwner(Mockito.anyInt(),
+                Mockito.anyBoolean(), Mockito.anyInt())).thenThrow(BookingStatusChangeException.class);
+        mvc.perform(patch("/bookings/1")
+                        .header("X-Sharer-User-Id", 1)
+                        .param("approved", "true")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(400));
+
+    }
+
+    @Test
     void testGetById() throws Exception {
         when(service.getById(Mockito.anyInt(), Mockito.anyInt())).thenReturn(makeBookingDto(1));
         mvc.perform(get("/bookings/1")
@@ -178,6 +193,18 @@ public class BookingControllerTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNotEmpty());
+    }
+
+    @Test
+    void testGetAllBadState() throws Exception {
+        when(service.getAllByUser(Mockito.anyString(), Mockito.anyInt(),
+                Mockito.anyInt(), Mockito.anyInt())).thenThrow(BookingBadRequest.class);
+        mvc.perform(get("/bookings")
+                        .header("X-Sharer-User-Id", 1)
+                        .param("state", "RYHNSKDN")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(400));
     }
 
     @Test

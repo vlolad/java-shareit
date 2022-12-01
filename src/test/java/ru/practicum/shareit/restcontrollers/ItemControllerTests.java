@@ -9,11 +9,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.item.ItemController;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.CreateItemRequest;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.exception.BadCommentException;
+import ru.practicum.shareit.item.exception.ItemBadRequestException;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.mapper.ItemMapperImpl;
 
@@ -130,6 +133,20 @@ public class ItemControllerTests {
     }
 
     @Test
+    void testPatchItemNotOwner() throws Exception {
+        when(service.patchItem(Mockito.any(CreateItemRequest.class), Mockito.anyInt()))
+                .thenThrow(ItemBadRequestException.class);
+        mvc.perform(patch("/items/3")
+                        .content(mapper.writeValueAsString(makeRequest(1)))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(403));
+    }
+
+    @Test
     void testGetItem() throws Exception {
         when(service.getItem(eq(5), Mockito.anyInt()))
                 .thenReturn(makeItemDto(5));
@@ -138,6 +155,17 @@ public class ItemControllerTests {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(5), Integer.class));
+    }
+
+    @Test
+    void testGetItemNotFound() throws Exception {
+        when(service.getItem(eq(5), Mockito.anyInt()))
+                .thenThrow(NotFoundException.class);
+        mvc.perform(get("/items/5")
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(404));
     }
 
     @Test
@@ -287,6 +315,20 @@ public class ItemControllerTests {
         comment.setText("            ");
         mvc.perform(post("/items/2/comment")
                         .content(mapper.writeValueAsString(comment))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Sharer-User-Id", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(400));
+    }
+
+    @Test
+    void testCreateNotTrulyComment() throws Exception {
+        when(service.createComment(Mockito.any(CommentDto.class), Mockito.anyInt()))
+                .thenThrow(BadCommentException.class);
+        mvc.perform(post("/items/2/comment")
+                        .content(mapper.writeValueAsString(makeCommentDto(1)))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", 1)

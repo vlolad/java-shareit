@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import ru.practicum.shareit.user.UserController;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.exception.UserCreationException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -97,6 +98,18 @@ public class UserControllerTests {
         userDto.setEmail(null);
         mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(400));
+    }
+
+    @Test
+    void testCreateUserEmailAlreadyExists() throws Exception {
+        when(service.create(Mockito.any(UserDto.class))).thenThrow(UserCreationException.class);
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(makeUserDto(1)))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
