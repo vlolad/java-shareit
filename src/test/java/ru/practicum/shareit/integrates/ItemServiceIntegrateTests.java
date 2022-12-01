@@ -37,11 +37,11 @@ public class ItemServiceIntegrateTests {
     @Test
     void testGetUserItems() {
         UserDto owner = userService.create(makeUserDto(1));
-        userService.create(makeUserDto(49));
+        UserDto owner2 = userService.create(makeUserDto(49));
 
         ItemDto item1 = itemService.create(makeRequest(1), owner.getId());
         ItemDto item2 = itemService.create(makeRequest(2), owner.getId());
-        ItemDto item3 = itemService.create(makeRequest(3), 2);
+        ItemDto item3 = itemService.create(makeRequest(3), owner2.getId());
         assertThat(owner.getId(), equalTo(1));
 
         List<ItemDto> result = itemService.getAllByOwner(1, 0, 20);
