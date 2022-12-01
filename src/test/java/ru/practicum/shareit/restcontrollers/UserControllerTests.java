@@ -108,13 +108,15 @@ public class UserControllerTests {
     @Test
     void testCreateUserEmailAlreadyExists() throws Exception {
         when(service.create(Mockito.any(UserDto.class))).thenThrow(UserCreationException.class);
+        UserDto createUserRequest = makeUserDto(1);
+        createUserRequest.setId(null);
         mvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(makeUserDto(1)))
+                        .content(mapper.writeValueAsString(createUserRequest))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(status().is(400));
+                .andExpect(status().is(409));
     }
 
     @Test

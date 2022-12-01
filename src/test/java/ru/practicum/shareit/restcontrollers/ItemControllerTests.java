@@ -327,8 +327,10 @@ public class ItemControllerTests {
     void testCreateNotTrulyComment() throws Exception {
         when(service.createComment(Mockito.any(CommentDto.class), Mockito.anyInt()))
                 .thenThrow(BadCommentException.class);
+        CommentDto request = makeCommentDto(1);
+        request.setId(null);
         mvc.perform(post("/items/2/comment")
-                        .content(mapper.writeValueAsString(makeCommentDto(1)))
+                        .content(mapper.writeValueAsString(request))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("X-Sharer-User-Id", 1)
