@@ -50,7 +50,7 @@ public class ErrorHandler {
     @ExceptionHandler
     public ResponseEntity<String> handleUserCreationException(final UserCreationException e) {
         log.error("UserCreationException: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler
