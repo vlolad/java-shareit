@@ -38,6 +38,7 @@ public class UserTests {
         assertThat(user.getId(), equalTo(userBack.getId()));
         assertThat(user.getEmail(), equalTo(userBack.getEmail()));
         assertThat(user.getName(), equalTo(userBack.getName()));
+        assertEquals(user, userBack);
     }
 
     @BeforeEach
