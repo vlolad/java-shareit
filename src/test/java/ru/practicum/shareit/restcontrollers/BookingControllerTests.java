@@ -11,9 +11,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoShort;
 import ru.practicum.shareit.booking.dto.BookingRequest;
 import ru.practicum.shareit.booking.exception.BookingBadRequest;
 import ru.practicum.shareit.booking.exception.BookingStatusChangeException;
+import ru.practicum.shareit.user.User;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -43,8 +45,17 @@ public class BookingControllerTests {
         BookingRequest request = makeRequest(1);
         BookingDto expected = makeBookingDto(1);
         expected.setId(null);
+        BookingDtoShort shortDto = bookingMapper.dtoToDtoShort(expected);
         expected.setBooker(null);
         assertEquals(expected, requestToDto(request));
+        Booking entity = bookingMapper.toEntity(expected);
+        User booker = new User();
+        booker.setId(2);
+        entity.setBooker(booker);
+        BookingDtoShort shortEntity = bookingMapper.toDtoShort(entity);
+        entity.getBooker().setId(null);
+        BookingDtoShort shortEntityWithoutId = bookingMapper.toDtoShort(entity);
+        BookingDtoShort shortDto2 = bookingMapper.dtoToDtoShort(expected);
     }
 
     @Test
