@@ -107,7 +107,7 @@ public class ItemService {
     public List<ItemDto> search(String text, Integer from, Integer size) {
         log.debug("Searching: {}", text);
         Pageable page = PageRequest.of(from / size, size);
-        return itemMapper.toDtoList(itemRepository.search(text, page));
+        return itemMapper.toDtoList(itemRepository.search(text, page).getContent());
     }
 
     @Transactional
