@@ -43,12 +43,12 @@ public class ItemServiceIntegrateTests {
         ItemDto item2 = itemService.create(makeRequest(2), owner.getId());
         ItemDto item3 = itemService.create(makeRequest(3), owner2.getId());
 
-        List<ItemDto> result = itemService.getAllByOwner(1, 0, 20);
+        List<ItemDto> result = itemService.getAllByOwner(owner.getId(), 0, 20);
         assertThat(result.size(), equalTo(2));
         assertThat(result.get(0).getName(), equalTo(item1.getName()));
         assertThat(result.get(1).getName(), equalTo(item2.getName()));
 
-        List<ItemDto> result2 = itemService.getAllByOwner(2, 0, 20);
+        List<ItemDto> result2 = itemService.getAllByOwner(owner2.getId(), 0, 20);
         assertThat(result2.size(), equalTo(1));
         assertThat(result2.get(0).getName(), equalTo(item3.getName()));
     }
