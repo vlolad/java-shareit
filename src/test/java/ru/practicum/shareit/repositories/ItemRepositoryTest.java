@@ -1,5 +1,6 @@
 package ru.practicum.shareit.repositories;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -22,8 +23,8 @@ class ItemRepositoryTest {
     @Autowired
     private TestEntityManager entityManager;
 
-    @Test
-    void testSearch() {
+    @BeforeEach
+    void setUp() {
         Item item = new Item();
         item.setAvailable(true);
         item.setDescription("Test_desc");
@@ -38,11 +39,15 @@ class ItemRepositoryTest {
         item1.setOwner(null);
         item1.setRequestId(123);
         itemRepository.save(item1);
+    }
+
+    @Test
+    void testSearch() {
         Pageable page = PageRequest.of(0, 20);
         List<Item> result = itemRepository.search("Chair", page).getContent();
 
         assertThat(result.size(), equalTo(1));
-        assertThat(result.get(0).getName(), equalTo(item1.getName()));
+        assertThat(result.get(0).getName(), equalTo("Chair brush"));
     }
 }
 

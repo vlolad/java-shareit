@@ -18,7 +18,9 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @Slf4j
@@ -83,17 +85,12 @@ public class ItemRequestService {
     }
 
     private List<ItemRequestDto> addItems(List<ItemRequestDto> requests) {
-        List<Integer> requestsId = requests.stream().map(ItemRequestDto::getId).collect(Collectors.toList());
+        List<Integer> requestsId = requests.stream().map(ItemRequestDto::getId).collect(toList());
         List<ItemDto> items = itemMapper.toDtoList(itemRepository.findAllByRequestIdIn(requestsId));
         if (items == null || items.isEmpty()) return requests;
-
-        Map<Integer, List<ItemDto>> itemsMap = new HashMap<>();
-        for (ItemDto item : items) {
-            final List<ItemDto> itemsByRequest = itemsMap
-                    .computeIfAbsent(item.getRequestId(), k -> new ArrayList<>());
-            itemsByRequest.add(item);
-        }
-        return requests.stream().peek(r -> r.setItems(itemsMap.get(r.getId()))).collect(Collectors.toList());
+        Map<Integer, List<ItemDto>> itemsMap = items.stream().collect(groupingBy(ItemDto::getRequestId, toList()));
+        return requests.stream().peek(r -> r.setItems(itemsMap.getOrDefault(r.getId(), Collections.emptyList())))
+                .collect(toList());
     }
 
     private ItemRequestDto addItems(ItemRequestDto request) {

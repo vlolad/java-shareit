@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserTests {
+public class UserServiceTests {
 
     @Mock
     UserRepository mockUserRepo;

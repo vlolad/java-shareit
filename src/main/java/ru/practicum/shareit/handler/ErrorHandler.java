@@ -2,6 +2,7 @@ package ru.practicum.shareit.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.internal.engine.path.PathImpl;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -38,6 +39,12 @@ public class ErrorHandler {
     public ResponseEntity<String> handleCommentNotTrueException(BadCommentException e) {
         log.error("CommentNotTrueException: {}", e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+        log.error("UserCreationException: {}", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler
@@ -87,7 +94,7 @@ public class ErrorHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    ValidationErrorResponse onConstraintValidationException(
+    public ValidationErrorResponse onConstraintValidationException(
             ConstraintViolationException e) {
         log.error("Handle ConstraintViolationException: {}", e.getMessage());
         ValidationErrorResponse error = new ValidationErrorResponse();
@@ -102,7 +109,7 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    ValidationErrorResponse onMethodArgumentNotValidException(
+    public ValidationErrorResponse onMethodArgumentNotValidException(
             MethodArgumentNotValidException e) {
         log.error("Handle MethodArgumentNotValidException: {}", e.getMessage());
         ValidationErrorResponse error = new ValidationErrorResponse();

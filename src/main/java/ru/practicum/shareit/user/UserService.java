@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.exception.UserCreationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,8 +25,8 @@ public class UserService {
 
     @Transactional
     public UserDto create(UserDto user) {
-            log.debug("Creating user with email: {}", user.getEmail());
-            return userMapper.toDto(userStorage.save(userMapper.toEntity(user)));
+        log.debug("Creating user with email: {}", user.getEmail());
+        return userMapper.toDto(userStorage.save(userMapper.toEntity(user)));
     }
 
     @Transactional
@@ -35,14 +34,8 @@ public class UserService {
         Optional<User> oldUser = userStorage.findById(user.getId());
         if (oldUser.isPresent()) {
             log.debug("User with id: {} exists.", user.getId());
-            if ((userStorage.findUserByEmail(user.getEmail()).isEmpty())
-                    || user.getEmail().equals(oldUser.get().getEmail())) {
-                User patchedUser = patchUser(oldUser.get(), user);
-                return userMapper.toDto(patchedUser);
-            } else {
-                log.error("Email already registered.");
-                throw new UserCreationException("User with such Email already exists.");
-            }
+            User patchedUser = patchUser(oldUser.get(), user);
+            return userMapper.toDto(patchedUser);
         } else {
             log.warn("User with such ID not found.");
             throw new NotFoundException("User with ID: " + user.getId() + " not found.");

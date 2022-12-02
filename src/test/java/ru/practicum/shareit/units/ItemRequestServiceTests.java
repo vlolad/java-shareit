@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ItemRequestTests {
+public class ItemRequestServiceTests {
 
     @Mock
     ItemRequestRepository mockRepo;

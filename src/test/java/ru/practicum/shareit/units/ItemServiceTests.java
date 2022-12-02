@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ItemTests {
+public class ItemServiceTests {
 
     @Mock
     ItemRepository mockItemRepo;

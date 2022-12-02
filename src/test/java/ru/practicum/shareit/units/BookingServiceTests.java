@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class BookingTests {
+public class BookingServiceTests {
 
     @Mock
     BookingRepository mockBookingRepo;

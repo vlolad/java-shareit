@@ -30,7 +30,7 @@ public class BookingController {
     public BookingDto create(@RequestBody @Valid BookingRequest request,
                              @RequestHeader("X-Sharer-User-Id") Integer requesterId) {
         log.debug("POST-request at /bookings: {}", request);
-        if (request.getStart().isAfter(request.getEnd()))
+        if (!request.getStart().isBefore(request.getEnd()))
             throw new BookingCreateException("Booking start is after the end.");
         return bookingService.create(request, requesterId);
     }
