@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.handler.exception.NotFoundException;
 import ru.practicum.shareit.user.*;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.exception.UserCreationException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,15 +77,6 @@ public class UserServiceTests {
     void testPatchUserNotFound() {
         Mockito.when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.empty());
         assertThrows(NotFoundException.class, () -> service.patch(userMapper.toDto(makeUser(7))));
-    }
-
-    @Test
-    void testPatchUserEmailAlreadyRegistered() {
-        User user = makeUser(2);
-        Mockito.when(mockUserRepo.findById(Mockito.anyInt())).thenReturn(Optional.of(makeUser(3)));
-        Mockito.when(mockUserRepo.findUserByEmail(Mockito.anyString())).thenReturn(Optional.of(user));
-        UserDto newUser = new UserDto(3, "testing", user.getEmail());
-        assertThrows(UserCreationException.class, () -> service.patch(newUser));
     }
 
     @Test

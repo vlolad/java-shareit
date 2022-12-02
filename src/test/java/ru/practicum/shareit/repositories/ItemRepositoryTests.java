@@ -16,7 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @DataJpaTest
-class ItemRepositoryTest {
+class ItemRepositoryTests {
     @Autowired
     private ItemRepository itemRepository;
 

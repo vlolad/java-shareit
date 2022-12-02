@@ -43,8 +43,8 @@ public class ErrorHandler {
 
     @ExceptionHandler
     public ResponseEntity<String> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
-        log.error("UserCreationException: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        log.error("DataIntegrityViolationException: {}", e.getMessage());
+        return new ResponseEntity<>("Такая запись в базе данных уже есть", HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler
