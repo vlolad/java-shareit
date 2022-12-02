@@ -57,7 +57,6 @@ public class UserServiceTests {
     void testPatchUser() {
         User user = makeUser(1);
         Mockito.when(mockUserRepo.findById(1)).thenReturn(Optional.of(user));
-        Mockito.when(mockUserRepo.findUserByEmail(Mockito.anyString())).thenReturn(Optional.empty());
         UserDto newUser = new UserDto();
         newUser.setId(1);
         newUser.setName("notTestUser");

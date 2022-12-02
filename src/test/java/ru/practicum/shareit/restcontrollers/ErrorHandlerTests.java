@@ -49,7 +49,7 @@ public class ErrorHandlerTests {
     void testHandleDataIntegrityViolationException() {
         ResponseEntity<String> actualHandleDataIntegrityViolationExceptionResult = errorHandler
                 .handleDataIntegrityViolationException(new DataIntegrityViolationException("Msg"));
-        assertEquals("Msg", actualHandleDataIntegrityViolationExceptionResult.getBody());
+        assertEquals("Такая запись в базе данных уже есть", actualHandleDataIntegrityViolationExceptionResult.getBody());
         assertEquals(HttpStatus.CONFLICT, actualHandleDataIntegrityViolationExceptionResult.getStatusCode());
     }
 
