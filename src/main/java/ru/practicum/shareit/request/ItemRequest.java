@@ -22,7 +22,7 @@ public class ItemRequest {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     @Column(name = "description")
-    private String desc;
+    private String description;
     @ManyToOne
     @JoinColumn(name = "requester_id", referencedColumnName = "id")
     private User requester;

@@ -19,6 +19,5 @@ public class ItemDto {
     private BookingDtoShort lastBooking;
     private BookingDtoShort nextBooking;
     private List<CommentDto> comments;
-    //Для текущего спринта не требуется реализовывать.
-    //private Integer request;
+    private Integer requestId;
 }

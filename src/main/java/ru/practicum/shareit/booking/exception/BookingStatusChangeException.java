@@ -7,8 +7,4 @@ public class BookingStatusChangeException extends HttpStatusCodeException {
     public BookingStatusChangeException(String statusText) {
         super(HttpStatus.BAD_REQUEST, statusText);
     }
-
-    public BookingStatusChangeException(HttpStatus statusCode, String statusText) {
-        super(statusCode, statusText);
-    }
 }

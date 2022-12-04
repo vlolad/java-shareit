@@ -1,8 +1,8 @@
 package ru.practicum.shareit.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.query.criteria.internal.BasicPathUsageException;
 import org.hibernate.validator.internal.engine.path.PathImpl;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -25,7 +25,6 @@ import ru.practicum.shareit.user.exception.UserCreationException;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
-import java.util.Arrays;
 import java.util.Locale;
 
 @Slf4j
@@ -37,17 +36,15 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleHibernateException(BasicPathUsageException e) {
-        log.error(e.getMessage());
-        log.debug(Arrays.toString(e.getStackTrace()));
-        return new ResponseEntity<>(e.getMessage() + "||" + e.getAttribute(),
-                HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<String> handleCommentNotTrueException(BadCommentException e) {
+        log.error("CommentNotTrueException: {}", e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleCommentNotTrueException(BadCommentException e) {
-        log.error("CommentNotTrueException: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
+    public ResponseEntity<String> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
+        log.error("DataIntegrityViolationException: {}", e.getMessage());
+        return new ResponseEntity<>("Такая запись в базе данных уже есть", HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler
@@ -60,19 +57,19 @@ public class ErrorHandler {
     @ExceptionHandler
     public ResponseEntity<String> handleUserCreationException(final UserCreationException e) {
         log.error("UserCreationException: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler
     public ResponseEntity<String> handleItemBadRequestException(final ItemBadRequestException e) {
         log.error("ItemBadRequestException: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler
     public ResponseEntity<String> handleNotFoundException(final NotFoundException e) {
         log.error("NotFoundException: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
@@ -84,7 +81,7 @@ public class ErrorHandler {
     @ExceptionHandler
     public ResponseEntity<String> handleBookingStatusChangeException(final BookingStatusChangeException e) {
         log.error("BookingStatusChangeException: {}", e.getMessage());
-        return new ResponseEntity<>(e.getMessage(), e.getStatusCode());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
@@ -97,7 +94,7 @@ public class ErrorHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    ValidationErrorResponse onConstraintValidationException(
+    public ValidationErrorResponse onConstraintValidationException(
             ConstraintViolationException e) {
         log.error("Handle ConstraintViolationException: {}", e.getMessage());
         ValidationErrorResponse error = new ValidationErrorResponse();
@@ -112,7 +109,7 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ResponseBody
-    ValidationErrorResponse onMethodArgumentNotValidException(
+    public ValidationErrorResponse onMethodArgumentNotValidException(
             MethodArgumentNotValidException e) {
         log.error("Handle MethodArgumentNotValidException: {}", e.getMessage());
         ValidationErrorResponse error = new ValidationErrorResponse();

@@ -2,6 +2,8 @@ package ru.practicum.shareit.booking;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,10 +45,10 @@ public class BookingService {
     public BookingDto create(BookingRequest request, Integer requesterId) {
         Optional<Item> item = itemRepository.findById(request.getItemId());
         if (item.isEmpty()) throw new NotFoundException("Item not found.");
-        if (item.get().getAvailable().equals(Boolean.FALSE))
-            throw new BookingCreateException("This item not available.");
         if (item.get().getOwner().getId().equals(requesterId))
             throw new NotFoundException("Booking your item? Why?");
+        if (item.get().getAvailable().equals(Boolean.FALSE))
+            throw new BookingCreateException("This item not available.");
         Booking booking = bookingMapper.toEntityFromRequest(request);
         booking.setItem(item.get());
 
@@ -64,7 +66,7 @@ public class BookingService {
         if (booking.isEmpty()) throw new NotFoundException("Booking not found.");
 
         User owner = booking.get().getItem().getOwner();
-        if (!owner.getId().equals(ownerId)) throw new NotFoundException("This is not user's booking.");
+        if (!owner.getId().equals(ownerId)) throw new NotFoundException("This is not user's item.");
         if (booking.get().getStatus().equals(BookingStatus.APPROVED))
             throw new BookingStatusChangeException("Booking already approved");
 
@@ -92,62 +94,62 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByUser(String state, Integer userId) {
+    public List<BookingDto> getAllByUser(String state, Integer userId, Integer from, Integer size) {
         if (userRepository.findById(userId).isEmpty())
             throw new NotFoundException("Requester not found");
         StateMode stateMode = StateMode.parseState(state);
-        Sort sort = Sort.by("start").descending();
+        Pageable page = PageRequest.of(from / size, size, Sort.by("start").descending());
         switch (stateMode) {
             case ALL:
-                return bookingMapper.toDtoList(bookingRepository.findByBookerId(userId, sort));
+                return bookingMapper.toDtoList(bookingRepository.findByBookerId(userId, page));
             case CURRENT:
                 LocalDateTime moment = LocalDateTime.now();
                 return bookingMapper.toDtoList(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(userId,
-                        moment, moment, sort));
+                        moment, moment, page));
             case PAST:
                 return bookingMapper.toDtoList(bookingRepository.findByBookerIdAndEndIsBefore(
-                        userId, LocalDateTime.now(), sort));
+                        userId, LocalDateTime.now(), page));
             case FUTURE:
                 return bookingMapper.toDtoList(bookingRepository.findByBookerIdAndStartIsAfter(
-                        userId, LocalDateTime.now(), sort));
+                        userId, LocalDateTime.now(), page));
             case WAITING:
                 return bookingMapper.toDtoList(bookingRepository.findByBookerIdAndStatusEquals(userId,
-                        BookingStatus.WAITING, sort));
+                        BookingStatus.WAITING, page));
             case REJECTED:
                 return bookingMapper.toDtoList(bookingRepository.findByBookerIdAndStatusEquals(userId,
-                        BookingStatus.REJECTED, sort));
+                        BookingStatus.REJECTED, page));
             default:
                 throw new BookingBadRequest("There is no state");
         }
     }
 
     @Transactional(readOnly = true)
-    public List<BookingDto> getAllByUserOwner(String state, Integer userId) {
+    public List<BookingDto> getAllByUserOwner(String state, Integer userId, Integer from, Integer size) {
         if (userRepository.findById(userId).isEmpty())
             throw new NotFoundException("Requester not found");
         StateMode stateMode = StateMode.parseState(state);
         List<Item> userItems = itemRepository.findByOwnerId(userId);
         List<Integer> userItemsIds = userItems.stream().map(Item::getId).collect(Collectors.toList());
-        Sort sort = Sort.by("start").descending();
+        Pageable page = PageRequest.of(from / size, size, Sort.by("start").descending());
         switch (stateMode) {
             case ALL:
-                return bookingMapper.toDtoList(bookingRepository.findByItemIdIn(userItemsIds, sort));
+                return bookingMapper.toDtoList(bookingRepository.findByItemIdIn(userItemsIds, page));
             case CURRENT:
                 LocalDateTime moment = LocalDateTime.now();
                 return bookingMapper.toDtoList(bookingRepository.findByItemIdInAndStartIsBeforeAndEndIsAfter(
-                        userItemsIds, moment, moment, sort));
+                        userItemsIds, moment, moment, page));
             case PAST:
                 return bookingMapper.toDtoList(bookingRepository.findByItemIdInAndEndIsBefore(
-                        userItemsIds, LocalDateTime.now(), sort));
+                        userItemsIds, LocalDateTime.now(), page));
             case FUTURE:
                 return bookingMapper.toDtoList(bookingRepository.findByItemIdInAndStartIsAfter(
-                        userItemsIds, LocalDateTime.now(), sort));
+                        userItemsIds, LocalDateTime.now(), page));
             case WAITING:
                 return bookingMapper.toDtoList(bookingRepository.findByItemIdInAndStatusEquals(
-                        userItemsIds, BookingStatus.WAITING, sort));
+                        userItemsIds, BookingStatus.WAITING, page));
             case REJECTED:
                 return bookingMapper.toDtoList(bookingRepository.findByItemIdInAndStatusEquals(
-                        userItemsIds, BookingStatus.REJECTED, sort));
+                        userItemsIds, BookingStatus.REJECTED, page));
             default:
                 throw new BookingBadRequest("There is no state");
         }

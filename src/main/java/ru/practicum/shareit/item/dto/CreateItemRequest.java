@@ -20,4 +20,5 @@ public class CreateItemRequest {
     private String description;
     @NotNull(groups = {Create.class})
     private Boolean available;
+    private Integer requestId;
 }

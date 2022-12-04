@@ -11,11 +11,14 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.validate.Create;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.*;
 
 @Slf4j
 @RestController
 @RequestMapping("/items")
+@Validated
 public class ItemController {
 
     private final ItemService itemService;
@@ -53,17 +56,21 @@ public class ItemController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer ownerId) {
+    public List<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer ownerId,
+                                @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                @RequestParam(value = "size", defaultValue = "20") @Positive Integer size) {
         log.debug("GET-request at /items. Owner ID: {}", ownerId);
-        return itemService.getAllItemsByOwner(ownerId);
+        return itemService.getAllByOwner(ownerId, from, size);
     }
 
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public List<ItemDto> search(@RequestParam("text") String text) {
+    public List<ItemDto> search(@RequestParam("text") String text,
+                                @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,
+                                @RequestParam(value = "size", defaultValue = "20") @Positive Integer size) {
         log.debug("GET-request at /items/search?text={}", text);
         if (text.isBlank()) return Collections.emptyList();
-        return itemService.searchItems(text);
+        return itemService.search(text, from, size);
     }
 
     @PostMapping("/{itemId}/comment")

@@ -2,6 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -90,20 +92,22 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> getAllItemsByOwner(Integer ownerId) {
+    public List<ItemDto> getAllByOwner(Integer ownerId, Integer from, Integer size) {
         if (userRepository.findById(ownerId).isEmpty())
             throw new NotFoundException("Owner (id: " + ownerId + ") not found.");
         log.info("Found owner (id:{}), return items.", ownerId);
-        List<ItemDto> itemsList = itemMapper.toDtoList(itemRepository.findByOwnerId(ownerId));
+        Pageable page = PageRequest.of(from / size, size);
+        List<ItemDto> itemsList = itemMapper.toDtoList(itemRepository.findByOwnerId(ownerId, page));
         addBookings(itemsList);
         addComments(itemsList);
         return itemsList;
     }
 
     @Transactional(readOnly = true)
-    public List<ItemDto> searchItems(String text) {
+    public List<ItemDto> search(String text, Integer from, Integer size) {
         log.debug("Searching: {}", text);
-        return itemMapper.toDtoList(itemRepository.search(text));
+        Pageable page = PageRequest.of(from / size, size);
+        return itemMapper.toDtoList(itemRepository.search(text, page).getContent());
     }
 
     @Transactional
@@ -134,6 +138,9 @@ public class ItemService {
         if (!Objects.equals(newItem.getAvailable(), null)) {
             item.setAvailable(newItem.getAvailable());
         }
+        if (!Objects.equals(newItem.getRequestId(), null)) {
+            item.setRequestId(newItem.getRequestId());
+        }
         return item;
     }
 
@@ -162,10 +169,12 @@ public class ItemService {
             if (bookings.isEmpty()) return;
             bookings = bookings.stream().sorted(Comparator.comparing(BookingDtoShort::getEnd)).collect(Collectors.toList());
             //Поменял логику поиска
-            item.setLastBooking(bookings.stream().filter(b -> b.getEnd().isBefore(moment))
-                    .collect(Collectors.toList()).get(0));
-            item.setNextBooking(bookings.stream().filter(b -> b.getStart().isAfter(moment))
-                    .collect(Collectors.toList()).get(0));
+            List<BookingDtoShort> previousBookings = bookings.stream().filter(b -> b.getEnd().isBefore(moment))
+                    .sorted(Comparator.comparing(BookingDtoShort::getEnd)).collect(Collectors.toList());
+            if (!previousBookings.isEmpty()) item.setLastBooking(previousBookings.get(0));
+            List<BookingDtoShort> futureBookings = bookings.stream().filter(b -> b.getStart().isAfter(moment))
+                    .sorted(Comparator.comparing(BookingDtoShort::getStart).reversed()).collect(Collectors.toList());
+            if (!futureBookings.isEmpty()) item.setNextBooking(futureBookings.get(0));
         }).collect(Collectors.toList());
     }
 
