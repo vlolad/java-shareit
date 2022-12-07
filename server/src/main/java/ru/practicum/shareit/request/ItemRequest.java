@@ -7,6 +7,7 @@ import ru.practicum.shareit.user.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
+
 @Getter
 @Setter
 @NoArgsConstructor
