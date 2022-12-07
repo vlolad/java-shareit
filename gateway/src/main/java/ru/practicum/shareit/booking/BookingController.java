@@ -70,8 +70,7 @@ public class BookingController {
     }
 
     private void checkBookingsDates(BookItemRequestDto booking) {
-        if (booking.getStart().isAfter(booking.getEnd())
-                || booking.getStart().equals(booking.getEnd()))
+        if (!booking.getStart().isBefore(booking.getEnd()))
             throw new BookingBadRequest("Unexpected booking dates.",
                     "Please, check that start booking date is before ending");
     }
