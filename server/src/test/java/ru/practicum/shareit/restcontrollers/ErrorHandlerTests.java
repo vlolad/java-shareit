@@ -16,10 +16,6 @@ import ru.practicum.shareit.item.exception.BadCommentException;
 import ru.practicum.shareit.item.exception.ItemBadRequestException;
 import ru.practicum.shareit.user.exception.UserCreationException;
 
-import javax.validation.ValidationException;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Disabled
@@ -32,12 +28,12 @@ public class ErrorHandlerTests {
         errorHandler = new ErrorHandler();
     }
 
-    @Test
-    void testValidationExceptionHandler() {
-        ValidationException exc = new ValidationException("Message");
-        String result = errorHandler.handleValidationException(exc);
-        assertThat(result, equalTo(exc.getMessage()));
-    }
+//    @Test
+//    void testValidationExceptionHandler() {
+//        ValidationException exc = new ValidationException("Message");
+//        String result = errorHandler.handleValidationException(exc);
+//        assertThat(result, equalTo(exc.getMessage()));
+//    }
 
     @Test
     void testHandleCommentNotTrueException() {
@@ -51,7 +47,8 @@ public class ErrorHandlerTests {
     void testHandleDataIntegrityViolationException() {
         ResponseEntity<String> actualHandleDataIntegrityViolationExceptionResult = errorHandler
                 .handleDataIntegrityViolationException(new DataIntegrityViolationException("Msg"));
-        assertEquals("Такая запись в базе данных уже есть", actualHandleDataIntegrityViolationExceptionResult.getBody());
+        assertEquals("Такая запись в базе данных уже есть",
+                actualHandleDataIntegrityViolationExceptionResult.getBody());
         assertEquals(HttpStatus.CONFLICT, actualHandleDataIntegrityViolationExceptionResult.getStatusCode());
     }
 
