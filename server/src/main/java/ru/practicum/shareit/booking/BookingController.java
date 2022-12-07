@@ -7,8 +7,6 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingRequest;
 import ru.practicum.shareit.booking.exception.BookingCreateException;
 
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
@@ -50,8 +48,8 @@ public class BookingController {
     @GetMapping //getBookings
     public List<BookingDto> getAll(@RequestParam(name = "state") String state,
                                    @RequestHeader("X-Sharer-User-Id") Integer userId,
-                                   @RequestParam(value = "from") @PositiveOrZero Integer from,
-                                   @RequestParam(value = "size") @Positive Integer size) {
+                                   @RequestParam(value = "from") Integer from,
+                                   @RequestParam(value = "size") Integer size) {
         log.debug("GET-request at /bookings");
         return bookingService.getAllByUser(state, userId, from, size);
     }

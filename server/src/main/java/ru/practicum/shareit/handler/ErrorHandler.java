@@ -1,7 +1,6 @@
 package ru.practicum.shareit.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +21,6 @@ import ru.practicum.shareit.item.exception.BadCommentException;
 import ru.practicum.shareit.item.exception.ItemBadRequestException;
 import ru.practicum.shareit.user.exception.UserCreationException;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.ValidationException;
 import java.util.Locale;
 
 @Slf4j
@@ -45,13 +41,6 @@ public class ErrorHandler {
     public ResponseEntity<String> handleDataIntegrityViolationException(final DataIntegrityViolationException e) {
         log.error("DataIntegrityViolationException: {}", e.getMessage());
         return new ResponseEntity<>("Такая запись в базе данных уже есть", HttpStatus.CONFLICT);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String handleValidationException(final ValidationException e) {
-        log.error("Validation error: {}", e.getMessage());
-        return e.getMessage();
     }
 
     @ExceptionHandler
@@ -91,20 +80,6 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage(), "Only our types allowed.");
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
-    public ValidationErrorResponse onConstraintValidationException(
-            ConstraintViolationException e) {
-        log.error("Handle ConstraintViolationException: {}", e.getMessage());
-        ValidationErrorResponse error = new ValidationErrorResponse();
-        for (ConstraintViolation violation : e.getConstraintViolations()) {
-            error.getViolations().add(
-                    new Violation(((PathImpl) violation.getPropertyPath()).getLeafNode().getName(),
-                            violation.getMessage()));
-        }
-        return error;
-    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
