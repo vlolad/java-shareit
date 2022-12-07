@@ -1,13 +1,14 @@
-package ru.practicum.shareit.request.dto;
+package ru.practicum.shareit.handler.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class ItemRequestShort {
+@NoArgsConstructor
+public class ErrorResponse {
 
+    private String error;
     private String description;
 }

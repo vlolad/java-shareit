@@ -1,6 +1,7 @@
 package ru.practicum.shareit.integrates;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +30,7 @@ import static org.hamcrest.Matchers.equalTo;
         },
         webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Disabled
 public class ItemServiceIntegrateTests {
 
     private final EntityManager em;

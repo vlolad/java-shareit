@@ -8,7 +8,7 @@ public enum StateMode {
     public static StateMode parseState(String line) {
         StateMode state;
         try {
-            state = StateMode.valueOf(line);
+            state = StateMode.valueOf(line.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new BookingBadRequest("Unknown state: " + line);
         }

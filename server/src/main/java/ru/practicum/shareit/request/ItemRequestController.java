@@ -3,20 +3,15 @@ package ru.practicum.shareit.request;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestShort;
-import ru.practicum.shareit.validate.Create;
 
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping(path = "/requests")
-@Validated
 public class ItemRequestController {
 
     private final ItemRequestService service;
@@ -26,34 +21,34 @@ public class ItemRequestController {
         this.service = service;
     }
 
-    @PostMapping
+    @PostMapping //postRequest
     @ResponseStatus(HttpStatus.OK)
-    public ItemRequestDto create(@RequestBody @Validated(Create.class) ItemRequestShort request,
-                                 @RequestHeader("X-Sharer-User-Id") @Positive Integer userId) {
+    public ItemRequestDto create(@RequestBody ItemRequestShort request,
+                                 @RequestHeader("X-Sharer-User-Id") Integer userId) {
         log.debug("POST-request at /requests");
         return service.create(request, userId);
     }
 
-    @GetMapping
+    @GetMapping //getByUser
     @ResponseStatus(HttpStatus.OK)
-    public List<ItemRequestDto> getByUser(@RequestHeader("X-Sharer-User-Id") @Positive Integer userId) {
+    public List<ItemRequestDto> getByUser(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         log.debug("GET-request at /requests, user: {}", userId);
         return service.getByUser(userId);
     }
 
-    @GetMapping("/all")
+    @GetMapping("/all") //getAll
     @ResponseStatus(HttpStatus.OK)
-    public List<ItemRequestDto> getAll(@RequestHeader("X-Sharer-User-Id") @Positive Integer userId,
-                                       @RequestParam(value = "from", defaultValue = "0") @PositiveOrZero Integer from,
-                                       @RequestParam(value = "size", defaultValue = "20") @Positive Integer size) {
+    public List<ItemRequestDto> getAll(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                       @RequestParam(value = "from") Integer from,
+                                       @RequestParam(value = "size") Integer size) {
         log.debug("GET-request at /requests/all?form={}&size={}, user: {}", from, size, userId);
         return service.getAll(userId, from, size);
     }
 
-    @GetMapping("/{requestId}")
+    @GetMapping("/{requestId}") //getById
     @ResponseStatus(HttpStatus.OK)
-    public ItemRequestDto getById(@RequestHeader("X-Sharer-User-Id") @Positive Integer userId,
-                                  @PathVariable("requestId") @Positive Integer requestId) {
+    public ItemRequestDto getById(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                  @PathVariable("requestId") Integer requestId) {
         log.debug("GET-request at /requests/{}", requestId);
         return service.getById(userId, requestId);
     }
