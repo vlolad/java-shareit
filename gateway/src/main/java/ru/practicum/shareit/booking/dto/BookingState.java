@@ -21,7 +21,7 @@ public enum BookingState {
         try {
             state = BookingState.valueOf(line.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new BookingBadRequest("Unknown state: " + line);
+            throw new BookingBadRequest("Unknown state: " + line, "Only our types allowed.");
         }
         return state;
     }

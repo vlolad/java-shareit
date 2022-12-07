@@ -22,8 +22,8 @@ public class ItemRequestController {
     private final ItemRequestClient itemRequestClient;
 
     @PostMapping
-    public ResponseEntity<Object> postRequest(@RequestBody @Validated(Create.class) CreateRequestDto request,
-                                              @RequestHeader("X-Sharer-User-Id") @Positive Integer userId) {
+    public ResponseEntity<Object> post(@RequestBody @Validated(Create.class) CreateRequestDto request,
+                                       @RequestHeader("X-Sharer-User-Id") @Positive Integer userId) {
         log.info("Post item request (length={}) by user id={}", request.getDescription().length(), userId);
         return itemRequestClient.postRequest(userId, request);
     }

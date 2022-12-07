@@ -40,7 +40,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBookingBadRequest(final BookingBadRequest e) {
         log.error("BookingBadRequest: {}", e.getMessage());
-        return new ErrorResponse(e.getMessage(), "Only our types allowed.");
+        return new ErrorResponse(e.getMessage(), e.getDescription());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

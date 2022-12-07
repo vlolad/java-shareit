@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingState;
+import ru.practicum.shareit.handler.model.BookingBadRequest;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -36,6 +37,7 @@ public class BookingController {
     public ResponseEntity<Object> bookItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                            @RequestBody @Valid BookItemRequestDto requestDto) {
         log.info("Creating booking {}, userId={}", requestDto, userId);
+        checkBookingsDates(requestDto); //Validation
         return bookingClient.bookItem(userId, requestDto);
     }
 
@@ -65,5 +67,12 @@ public class BookingController {
         log.info("Get bookings by owner, userId={}, state={}", userId, stateParam);
         BookingState state = BookingState.parseState(stateParam);
         return bookingClient.getByOwner(userId, state, from, size);
+    }
+
+    private void checkBookingsDates(BookItemRequestDto booking) {
+        if (booking.getStart().isAfter(booking.getEnd())
+                || booking.getStart().equals(booking.getEnd()))
+            throw new BookingBadRequest("Unexpected booking dates.",
+                    "Please, check that start booking date is before ending");
     }
 }

@@ -26,8 +26,8 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<Object> editUser(@RequestBody @Validated(Update.class) UserDto user,
-                                           @PathVariable Integer userId) {
+    public ResponseEntity<Object> edit(@RequestBody @Validated(Update.class) UserDto user,
+                                       @PathVariable Integer userId) {
         log.info("Patch user id={}", userId);
         return userClient.editUser(userId, user);
     }
